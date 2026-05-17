@@ -129,7 +129,7 @@ export function CriteriaList({ score, loading }: Props) {
 
       <p className="mt-6 text-xs text-base-mute leading-relaxed">
         A minimum of three points total is required to be eligible. Scoring mirrors
-        the Arbitrum airdrop rubric exactly, applied to Base mainnet activity.
+        the Arbitrum airdrop exactly, applied to Base mainnet activity.
         <br />
         <span className="font-semibold text-base-text">
           Score: {score.finalPoints} / 15 points.

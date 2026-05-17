@@ -129,7 +129,7 @@ export default function Page() {
       <footer className="border-t border-base-border/60">
         <div className="mx-auto max-w-6xl px-6 py-6 text-xs text-base-mute">
           Hypothetical calculator. Not affiliated with Base, Coinbase, or any
-          token issuer. Scoring rubric mirrors the public Arbitrum airdrop
+          token issuer. Scoring mirrors the public Arbitrum airdrop
           eligibility specification.
         </div>
       </footer>
