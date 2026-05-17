@@ -1,5 +1,4 @@
-const BASE_URL = "https://api.etherscan.io/v2/api";
-const BASE_CHAIN_ID = "8453";
+const BASE_URL = "https://base.blockscout.com/api";
 
 type ApiResponse<T> = { status: string; message: string; result: T };
 
@@ -15,8 +14,6 @@ export type NormalTx = {
   txreceipt_status: string;
   contractAddress: string;
   input: string;
-  type?: string;
-  txType?: string;
   methodId?: string;
   functionName?: string;
 };
@@ -34,23 +31,16 @@ export type TokenTx = {
 };
 
 async function call<T>(params: Record<string, string>): Promise<T> {
-  const key = process.env.ETHERSCAN_API_KEY || process.env.BASESCAN_API_KEY;
-  if (!key) throw new Error("ETHERSCAN_API_KEY is not set");
   const url = new URL(BASE_URL);
-  url.searchParams.set("chainid", BASE_CHAIN_ID);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  url.searchParams.set("apikey", key);
   const res = await fetch(url.toString(), { cache: "no-store" });
-  if (!res.ok) throw new Error(`Etherscan ${res.status}`);
+  if (!res.ok) throw new Error(`Blockscout ${res.status}`);
   const json = (await res.json()) as ApiResponse<T>;
   if (json.status !== "1") {
     if (typeof json.result === "string" && /No transactions/i.test(json.result)) {
       return [] as unknown as T;
     }
     if (json.message === "No transactions found") return [] as unknown as T;
-    if (typeof json.result === "string" && /deprecated|V1 endpoint/i.test(json.result)) {
-      throw new Error(`Etherscan API: ${json.result}`);
-    }
   }
   return json.result;
 }

@@ -4,14 +4,10 @@ import { getEthPriceUsd, tokenUsdValue } from "./pricing";
 import type { ActivityStats } from "./types";
 
 const FORTY_EIGHT_HOURS_S = 48 * 60 * 60;
+const L2_STANDARD_BRIDGE = "0x4200000000000000000000000000000000000010";
 
 function isContract(input: string): boolean {
   return Boolean(input) && input !== "0x" && input.length > 2;
-}
-
-function isDepositTx(tx: { type?: string; txType?: string }): boolean {
-  const t = (tx.type ?? tx.txType ?? "").toString().toLowerCase();
-  return t === "0x7e" || t === "126";
 }
 
 export async function analyzeAddress(address: string): Promise<ActivityStats> {
@@ -50,17 +46,19 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
       const ethValue = Number(BigInt(tx.value || "0")) / 1e18;
       aggValueUsd += ethValue * ethPrice;
     }
-
-    if (isDepositTx(tx) && tx.to?.toLowerCase() === lower) {
-      hasBridged = true;
-      const ethValue = Number(BigInt(tx.value || "0")) / 1e18;
-      bridgedUsd += ethValue * ethPrice;
-    }
   }
 
   for (const tx of internal) {
     const ts = Number(tx.timeStamp);
     if (ts) timestamps.push(ts);
+    if (
+      tx.from?.toLowerCase() === L2_STANDARD_BRIDGE &&
+      tx.to?.toLowerCase() === lower
+    ) {
+      hasBridged = true;
+      const ethValue = Number(BigInt(tx.value || "0")) / 1e18;
+      bridgedUsd += ethValue * ethPrice;
+    }
   }
 
   for (const t of tokens) {
@@ -75,7 +73,11 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
       const usd = tokenUsdValue(t.contractAddress, BigInt(t.value || "0"), decimals, ethPrice);
       aggValueUsd += usd;
     }
-    if (t.to?.toLowerCase() === lower && hasBridged) {
+    if (
+      t.from?.toLowerCase() === L2_STANDARD_BRIDGE &&
+      t.to?.toLowerCase() === lower
+    ) {
+      hasBridged = true;
       const decimals = Number(t.tokenDecimal || "18");
       const usd = tokenUsdValue(t.contractAddress, BigInt(t.value || "0"), decimals, ethPrice);
       bridgedUsd += usd;
