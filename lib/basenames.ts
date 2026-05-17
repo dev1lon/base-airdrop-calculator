@@ -32,22 +32,35 @@ function reverseNode(address: string): `0x${string}` {
   return keccak256(encodePacked(["bytes32", "bytes32"], [baseReverseRoot, labelHash]));
 }
 
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms)),
+  ]);
+}
+
 export async function lookupBaseName(address: string): Promise<string | null> {
   try {
     const node = reverseNode(address);
-    const name = (await client.readContract({
-      address: L2_RESOLVER,
-      abi: RESOLVER_ABI,
-      functionName: "name",
-      args: [node],
-    })) as string;
+    const name = (await withTimeout(
+      client.readContract({
+        address: L2_RESOLVER,
+        abi: RESOLVER_ABI,
+        functionName: "name",
+        args: [node],
+      }),
+      8000
+    )) as string;
     if (!name) return null;
-    const forward = (await client.readContract({
-      address: L2_RESOLVER,
-      abi: RESOLVER_ABI,
-      functionName: "addr",
-      args: [namehash(name)],
-    })) as string;
+    const forward = (await withTimeout(
+      client.readContract({
+        address: L2_RESOLVER,
+        abi: RESOLVER_ABI,
+        functionName: "addr",
+        args: [namehash(name)],
+      }),
+      8000
+    )) as string;
     if (forward && forward.toLowerCase() === address.toLowerCase()) {
       return name;
     }
