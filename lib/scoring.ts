@@ -13,10 +13,19 @@ const TOKENS_BY_POINTS: Record<number, number> = {
 };
 const MAX_TOKENS = 10250;
 
-export const TOTAL_SUPPLY = 10_000_000_000;
+export const DEFAULT_SUPPLY = 10_000_000_000;
 export const ARB_AIRDROP_PCT = 11.62;
 export const DEFAULT_FDV = 5_000_000_000;
 export const DEFAULT_AIRDROP_PCT = 25;
+
+export const GROUP_LABELS: Record<Criterion["group"], string> = {
+  bridged: "BRIDGED TO BASE",
+  time: "TRANSACTIONS OVER TIME",
+  frequency: "TRANSACTION FREQUENCY AND INTERACTION",
+  value: "TRANSACTION VALUE",
+  bridgedValue: "ASSETS BRIDGED TO BASE",
+  basename: "OWNS A BASE NAME",
+};
 
 export type Valuation = {
   scaledTokens: number;
@@ -27,12 +36,14 @@ export type Valuation = {
 export function computeValue(
   baseTokens: number,
   fdv: number,
-  airdropPct: number
+  airdropPct: number,
+  totalSupply: number
 ): Valuation {
   const safeFdv = Number.isFinite(fdv) && fdv >= 0 ? fdv : 0;
   const safePct = Number.isFinite(airdropPct) && airdropPct >= 0 ? airdropPct : 0;
+  const safeSupply = Number.isFinite(totalSupply) && totalSupply > 0 ? totalSupply : DEFAULT_SUPPLY;
   const scaledTokens = Math.round(baseTokens * (safePct / ARB_AIRDROP_PCT));
-  const tokenPrice = safeFdv / TOTAL_SUPPLY;
+  const tokenPrice = safeFdv / safeSupply;
   const userUsd = scaledTokens * tokenPrice;
   return { scaledTokens, tokenPrice, userUsd };
 }
@@ -44,107 +55,107 @@ export function score(stats: ActivityStats): ScoreResult {
     {
       id: "bridged",
       group: "bridged",
-      label: "BRIDGED TO BASE",
+      label: "You've bridged funds into Base",
       met: stats.hasBridged,
       detail: stats.hasBridged
-        ? "Deposit transaction detected on L2"
-        : "No L1→L2 deposit transaction found",
+        ? "Canonical L2StandardBridge deposit detected"
+        : "No canonical bridge deposit detected on L2",
     },
     {
       id: "months-2",
       group: "time",
-      label: "TRANSACTIONS OVER TIME",
+      label: "You've conducted transactions during 2 distinct months",
       met: stats.monthsActive >= 2,
-      detail: `Active in ${stats.monthsActive} distinct month${stats.monthsActive === 1 ? "" : "s"} (requires 2+)`,
+      detail: `Active in ${stats.monthsActive} distinct month${stats.monthsActive === 1 ? "" : "s"}`,
     },
     {
       id: "months-6",
       group: "time",
-      label: "TRANSACTIONS ACROSS 6 MONTHS",
+      label: "You've conducted transactions during 6 distinct months",
       met: stats.monthsActive >= 6,
-      detail: `Active in ${stats.monthsActive} months (requires 6+)`,
+      detail: `Active in ${stats.monthsActive} months`,
     },
     {
       id: "months-9",
       group: "time",
-      label: "TRANSACTIONS ACROSS 9 MONTHS",
+      label: "You've conducted transactions during 9 distinct months",
       met: stats.monthsActive >= 9,
-      detail: `Active in ${stats.monthsActive} months (requires 9+)`,
+      detail: `Active in ${stats.monthsActive} months`,
     },
     {
       id: "freq-4",
       group: "frequency",
-      label: "TRANSACTION FREQUENCY AND INTERACTION",
+      label: "You've conducted more than 4 transactions OR interacted with more than 4 smart contracts",
       met: interactions > 4,
-      detail: `${stats.txCount} transactions, ${stats.contractCount} unique contracts (requires >4)`,
+      detail: `${stats.txCount} transactions, ${stats.contractCount} unique contracts`,
     },
     {
       id: "freq-10",
       group: "frequency",
-      label: ">10 TRANSACTIONS OR CONTRACTS",
+      label: "You've conducted more than 10 transactions OR interacted with more than 10 smart contracts",
       met: interactions > 10,
-      detail: `${stats.txCount} txs, ${stats.contractCount} contracts (requires >10)`,
+      detail: `${stats.txCount} transactions, ${stats.contractCount} unique contracts`,
     },
     {
       id: "freq-25",
       group: "frequency",
-      label: ">25 TRANSACTIONS OR CONTRACTS",
+      label: "You've conducted more than 25 transactions OR interacted with more than 25 smart contracts",
       met: interactions > 25,
-      detail: `${stats.txCount} txs, ${stats.contractCount} contracts (requires >25)`,
+      detail: `${stats.txCount} transactions, ${stats.contractCount} unique contracts`,
     },
     {
       id: "freq-100",
       group: "frequency",
-      label: ">100 TRANSACTIONS OR CONTRACTS",
+      label: "You've conducted more than 100 transactions OR interacted with more than 100 smart contracts",
       met: interactions > 100,
-      detail: `${stats.txCount} txs, ${stats.contractCount} contracts (requires >100)`,
+      detail: `${stats.txCount} transactions, ${stats.contractCount} unique contracts`,
     },
     {
       id: "value-10k",
       group: "value",
-      label: "TRANSACTION VALUE",
+      label: "You've conducted transactions with more than $10,000 in aggregate value",
       met: stats.aggValueUsd > 10_000,
-      detail: `Aggregate value $${fmt(stats.aggValueUsd)} (requires >$10k)`,
+      detail: `Aggregate value $${fmt(stats.aggValueUsd)}`,
     },
     {
       id: "value-50k",
       group: "value",
-      label: ">$50K TRANSACTION VALUE",
+      label: "You've conducted transactions with more than $50,000 in aggregate value",
       met: stats.aggValueUsd > 50_000,
-      detail: `Aggregate value $${fmt(stats.aggValueUsd)} (requires >$50k)`,
+      detail: `Aggregate value $${fmt(stats.aggValueUsd)}`,
     },
     {
       id: "value-250k",
       group: "value",
-      label: ">$250K TRANSACTION VALUE",
+      label: "You've conducted transactions with more than $250,000 in aggregate value",
       met: stats.aggValueUsd > 250_000,
-      detail: `Aggregate value $${fmt(stats.aggValueUsd)} (requires >$250k)`,
+      detail: `Aggregate value $${fmt(stats.aggValueUsd)}`,
     },
     {
       id: "bridge-10k",
       group: "bridgedValue",
-      label: "ASSETS BRIDGED TO BASE",
+      label: "You've bridged more than $10,000 of assets to Base",
       met: stats.bridgedUsd > 10_000,
-      detail: `$${fmt(stats.bridgedUsd)} bridged (requires >$10k)`,
+      detail: `$${fmt(stats.bridgedUsd)} bridged via canonical bridge`,
     },
     {
       id: "bridge-50k",
       group: "bridgedValue",
-      label: ">$50K ASSETS BRIDGED",
+      label: "You've bridged more than $50,000 of assets to Base",
       met: stats.bridgedUsd > 50_000,
-      detail: `$${fmt(stats.bridgedUsd)} bridged (requires >$50k)`,
+      detail: `$${fmt(stats.bridgedUsd)} bridged via canonical bridge`,
     },
     {
       id: "bridge-250k",
       group: "bridgedValue",
-      label: ">$250K ASSETS BRIDGED",
+      label: "You've bridged more than $250,000 of assets to Base",
       met: stats.bridgedUsd > 250_000,
-      detail: `$${fmt(stats.bridgedUsd)} bridged (requires >$250k)`,
+      detail: `$${fmt(stats.bridgedUsd)} bridged via canonical bridge`,
     },
     {
       id: "basename",
       group: "basename",
-      label: "OWNS A BASE NAME",
+      label: "You own a primary Base Name",
       met: stats.hasBaseName,
       detail: stats.hasBaseName
         ? `Primary name: ${stats.baseName}`

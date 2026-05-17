@@ -1,58 +1,84 @@
 "use client";
 
 import { useState } from "react";
-import type { ScoreResult } from "@/lib/types";
+import type { Criterion, ScoreResult } from "@/lib/types";
 
 type Props = { score: ScoreResult | null; loading: boolean };
 
-const SKELETON_LABELS = [
-  "BRIDGED TO BASE",
-  "TRANSACTIONS OVER TIME",
-  "TRANSACTION FREQUENCY AND INTERACTION",
-  "TRANSACTION VALUE",
-  "ASSETS BRIDGED TO BASE",
-  "OWNS A BASE NAME",
+const GROUP_ORDER: Criterion["group"][] = [
+  "bridged",
+  "time",
+  "frequency",
+  "value",
+  "bridgedValue",
+  "basename",
 ];
 
-function Row({
+const GROUP_LABELS: Record<Criterion["group"], string> = {
+  bridged: "BRIDGED TO BASE",
+  time: "TRANSACTIONS OVER TIME",
+  frequency: "TRANSACTION FREQUENCY AND INTERACTION",
+  value: "TRANSACTION VALUE",
+  bridgedValue: "ASSETS BRIDGED TO BASE",
+  basename: "OWNS A BASE NAME",
+};
+
+function GroupRow({
+  group,
   label,
-  met,
-  detail,
-  showState,
+  items,
+  loading,
 }: {
+  group: Criterion["group"];
   label: string;
-  met: boolean;
-  detail: string;
-  showState: boolean;
+  items: Criterion[];
+  loading: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
+  const anyMet = items.some((i) => i.met);
+
   return (
     <div className="border-b border-base-border/60">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between py-4 text-left hover:bg-white/[0.02] px-1 transition-colors"
+        className="w-full flex items-center justify-between py-4 px-1 text-left hover:bg-white/[0.02] transition-colors"
+        disabled={loading}
       >
         <div className="flex items-center gap-3">
-          {showState ? (
-            met ? (
-              <span className="text-base-green text-lg leading-none">✓</span>
-            ) : (
-              <span className="text-base-red text-lg leading-none">✕</span>
-            )
-          ) : (
+          {loading ? (
             <span className="text-base-mute/40 text-lg leading-none">·</span>
+          ) : anyMet ? (
+            <span className="text-base-green text-lg leading-none">✓</span>
+          ) : (
+            <span className="text-base-red text-lg leading-none">✕</span>
           )}
           <span
-            className={`uppercase text-sm tracking-wider ${showState ? "text-base-text" : "text-base-mute/50"}`}
+            className={`uppercase text-sm tracking-wider ${loading ? "text-base-mute/50" : "text-base-text"}`}
           >
             {label}
           </span>
         </div>
         <span className="text-base-mute text-lg">{open ? "−" : "+"}</span>
       </button>
-      {open && showState && (
-        <div className="pb-4 pl-7 pr-2 text-xs text-base-mute">{detail}</div>
+
+      {open && !loading && (
+        <div className="pb-4 pl-2 pr-2 space-y-2">
+          {items.map((item) => (
+            <div key={item.id} className="flex items-start gap-3 pl-1">
+              <span
+                className={`text-base leading-tight pt-[1px] ${item.met ? "text-base-green" : "text-base-mute/30"}`}
+              >
+                ✓
+              </span>
+              <span
+                className={`text-sm leading-snug ${item.met ? "text-base-text" : "text-base-mute/60"}`}
+              >
+                {item.label}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -62,20 +88,35 @@ export function CriteriaList({ score, loading }: Props) {
   if (loading || !score) {
     return (
       <div>
-        {SKELETON_LABELS.map((label) => (
-          <Row key={label} label={label} met={false} detail="" showState={false} />
+        {GROUP_ORDER.map((g) => (
+          <GroupRow key={g} group={g} label={GROUP_LABELS[g]} items={[]} loading />
         ))}
       </div>
     );
   }
 
-  const condensed = condense(score);
+  const byGroup: Record<Criterion["group"], Criterion[]> = {
+    bridged: [],
+    time: [],
+    frequency: [],
+    value: [],
+    bridgedValue: [],
+    basename: [],
+  };
+  for (const c of score.criteria) byGroup[c.group].push(c);
 
   return (
     <div>
-      {condensed.map((c) => (
-        <Row key={c.id} label={c.label} met={c.met} detail={c.detail} showState />
+      {GROUP_ORDER.map((g) => (
+        <GroupRow
+          key={g}
+          group={g}
+          label={GROUP_LABELS[g]}
+          items={byGroup[g]}
+          loading={false}
+        />
       ))}
+
       {score.deductions.some((d) => d.applied) && (
         <div className="mt-4 text-xs text-base-red">
           {score.deductions
@@ -85,6 +126,7 @@ export function CriteriaList({ score, loading }: Props) {
             ))}
         </div>
       )}
+
       <p className="mt-6 text-xs text-base-mute leading-relaxed">
         A minimum of three points total is required to be eligible. Scoring mirrors
         the Arbitrum airdrop rubric exactly, applied to Base mainnet activity.
@@ -95,42 +137,4 @@ export function CriteriaList({ score, loading }: Props) {
       </p>
     </div>
   );
-}
-
-function condense(score: ScoreResult) {
-  const pickHighestMet = (ids: string[], fallbackLabel: string) => {
-    const all = score.criteria.filter((c) => ids.includes(c.id));
-    const met = all.filter((c) => c.met);
-    if (met.length > 0) {
-      const top = met[met.length - 1]!;
-      return { id: top.id, label: fallbackLabel, met: true, detail: top.detail };
-    }
-    const first = all[0]!;
-    return { id: first.id, label: fallbackLabel, met: false, detail: first.detail };
-  };
-
-  const bridged = score.criteria.find((c) => c.id === "bridged")!;
-  const time = pickHighestMet(["months-2", "months-6", "months-9"], "TRANSACTIONS OVER TIME");
-  const freq = pickHighestMet(
-    ["freq-4", "freq-10", "freq-25", "freq-100"],
-    "TRANSACTION FREQUENCY AND INTERACTION"
-  );
-  const value = pickHighestMet(
-    ["value-10k", "value-50k", "value-250k"],
-    "TRANSACTION VALUE"
-  );
-  const bridgedValue = pickHighestMet(
-    ["bridge-10k", "bridge-50k", "bridge-250k"],
-    "ASSETS BRIDGED TO BASE"
-  );
-  const basename = score.criteria.find((c) => c.id === "basename")!;
-
-  return [
-    { id: bridged.id, label: bridged.label, met: bridged.met, detail: bridged.detail },
-    time,
-    freq,
-    value,
-    bridgedValue,
-    { id: basename.id, label: basename.label, met: basename.met, detail: basename.detail },
-  ];
 }

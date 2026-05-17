@@ -42,7 +42,7 @@ export type CheckResponse = {
 
 export type ConfigResponse = {
   ok: true;
-  totalSupply: number;
+  defaultSupply: number;
   defaultFdv: number;
   defaultAirdropPct: number;
 };

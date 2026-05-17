@@ -23,6 +23,7 @@ export default function Page() {
 
   const [fdv, setFdv] = useState<number | null>(null);
   const [airdropPct, setAirdropPct] = useState<number | null>(null);
+  const [totalSupply, setTotalSupply] = useState<number | null>(null);
 
   const [scaledTokens, setScaledTokens] = useState(0);
   const [userUsd, setUserUsd] = useState(0);
@@ -34,6 +35,7 @@ export default function Page() {
         setConfig(c);
         setFdv(c.defaultFdv);
         setAirdropPct(c.defaultAirdropPct);
+        setTotalSupply(c.defaultSupply);
       })
       .catch(() => setError("Failed to load config"));
   }, []);
@@ -41,7 +43,7 @@ export default function Page() {
   const valueAbort = useRef<AbortController | null>(null);
   const valueTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (!score || fdv == null || airdropPct == null) {
+    if (!score || fdv == null || airdropPct == null || totalSupply == null) {
       setScaledTokens(0);
       setUserUsd(0);
       return;
@@ -51,7 +53,7 @@ export default function Page() {
       valueAbort.current?.abort();
       const ctrl = new AbortController();
       valueAbort.current = ctrl;
-      const url = `/api/value?baseTokens=${score.baseTokens}&fdv=${fdv}&airdropPct=${airdropPct}`;
+      const url = `/api/value?baseTokens=${score.baseTokens}&fdv=${fdv}&airdropPct=${airdropPct}&totalSupply=${totalSupply}`;
       fetch(url, { signal: ctrl.signal })
         .then((r) => r.json())
         .then((j: ValuationResponse) => {
@@ -63,7 +65,7 @@ export default function Page() {
     return () => {
       if (valueTimer.current) clearTimeout(valueTimer.current);
     };
-  }, [score, fdv, airdropPct]);
+  }, [score, fdv, airdropPct, totalSupply]);
 
   async function handleCheck(input: string) {
     setLoading(true);
@@ -105,13 +107,15 @@ export default function Page() {
             loading={loading}
           />
 
-          {config && fdv != null && airdropPct != null && (
+          {config && fdv != null && airdropPct != null && totalSupply != null && (
             <div className="mt-10">
               <ValuationInputs
                 fdv={fdv}
                 setFdv={setFdv}
                 airdropPct={airdropPct}
                 setAirdropPct={setAirdropPct}
+                totalSupply={totalSupply}
+                setTotalSupply={setTotalSupply}
               />
             </div>
           )}
