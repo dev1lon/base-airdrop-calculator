@@ -43,7 +43,6 @@ export type CheckResponse = {
 export type ConfigResponse = {
   ok: true;
   totalSupply: number;
-  arbAirdropPct: number;
   defaultFdv: number;
   defaultAirdropPct: number;
 };
@@ -51,9 +50,4 @@ export type ConfigResponse = {
 export type ValuationResponse = {
   ok: true;
   valuation: { scaledTokens: number; tokenPrice: number; userUsd: number };
-  bounds: {
-    totalSupply: number;
-    arbAirdropPct: number;
-    defaultFdv: number;
-  };
 };
