@@ -159,15 +159,15 @@ export function ValuationInputs({
         </div>
         <input
           type="range"
-          min={0}
+          min={1}
           max={100}
           step={0.1}
-          value={Math.min(100, Math.max(0, airdropPct))}
+          value={Math.min(100, Math.max(1, airdropPct))}
           onChange={(e) => setAirdropPct(Number(e.target.value))}
           className="w-full mt-4"
         />
         <div className="flex justify-between text-[10px] text-base-mute/70 mt-1 font-mono">
-          <span>0%</span>
+          <span>1%</span>
           <span>100%</span>
         </div>
       </div>

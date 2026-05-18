@@ -134,14 +134,17 @@ export default function Page() {
       </div>
 
       <footer className="border-t border-base-border/60">
-        <div className="mx-auto max-w-6xl px-6 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between text-xs text-base-mute">
+        <div
+          className="mx-auto max-w-6xl px-6 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between text-base-mute"
+          style={{ fontSize: "0.85rem" }}
+        >
           <span className="max-w-2xl">
             Hypothetical calculator. Not affiliated with Base, Coinbase, or any
             token issuer. Scoring mirrors the public Arbitrum airdrop
             eligibility specification.
           </span>
           <span className="whitespace-nowrap">
-            created by{" "}
+            Created by{" "}
             <a
               href="https://x.com/devilonnn"
               target="_blank"
