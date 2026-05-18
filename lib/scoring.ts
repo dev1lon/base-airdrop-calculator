@@ -18,27 +18,6 @@ export const ARB_AIRDROP_PCT = 11.62;
 export const DEFAULT_FDV = 5_000_000_000;
 export const DEFAULT_AIRDROP_PCT = 25;
 
-export type Valuation = {
-  scaledTokens: number;
-  tokenPrice: number;
-  userUsd: number;
-};
-
-export function computeValue(
-  baseTokens: number,
-  fdv: number,
-  airdropPct: number,
-  totalSupply: number
-): Valuation {
-  const safeFdv = Number.isFinite(fdv) && fdv >= 0 ? fdv : 0;
-  const safePct = Number.isFinite(airdropPct) && airdropPct >= 0 ? airdropPct : 0;
-  const safeSupply = Number.isFinite(totalSupply) && totalSupply > 0 ? totalSupply : DEFAULT_SUPPLY;
-  const scaledTokens = Math.round(baseTokens * (safePct / ARB_AIRDROP_PCT));
-  const tokenPrice = safeFdv / safeSupply;
-  const userUsd = scaledTokens * tokenPrice;
-  return { scaledTokens, tokenPrice, userUsd };
-}
-
 export function score(stats: ActivityStats): ScoreResult {
   const interactions = Math.max(stats.txCount, stats.contractCount);
 

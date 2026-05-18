@@ -72,6 +72,15 @@ function AmountRow({
     if (next !== value) onChange(next);
   }, [amount, unit]);
 
+  useEffect(() => {
+    const current = Number(amount) * UNIT_MULT[unit];
+    if (Number.isFinite(value) && Math.abs(current - value) > 1e-6) {
+      const next = splitAmount(value);
+      setAmount(next.amount);
+      setUnit(next.unit);
+    }
+  }, [value]);
+
   return (
     <div>
       <label className="uppercase text-xs tracking-widest text-base-mute">{label}</label>
@@ -115,6 +124,15 @@ function SupplyRow({
     const next = num * UNIT_MULT[unit];
     if (next !== value) onChange(next);
   }, [amount, unit]);
+
+  useEffect(() => {
+    const current = Number(amount) * UNIT_MULT[unit];
+    if (Number.isFinite(value) && Math.abs(current - value) > 1e-6) {
+      const next = splitAmount(value);
+      setAmount(next.amount);
+      setUnit(next.unit);
+    }
+  }, [value]);
 
   return (
     <div>

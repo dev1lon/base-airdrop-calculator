@@ -30,25 +30,15 @@ export type ScoreResult = {
   eligible: boolean;
 };
 
-export type CheckResponse = {
-  ok: true;
-  address: string;
-  resolvedFromName: string | null;
-  stats: ActivityStats;
-  score: ScoreResult;
-} | {
-  ok: false;
-  error: string;
-};
-
-export type ConfigResponse = {
-  ok: true;
-  defaultSupply: number;
-  defaultFdv: number;
-  defaultAirdropPct: number;
-};
-
-export type ValuationResponse = {
-  ok: true;
-  valuation: { scaledTokens: number; tokenPrice: number; userUsd: number };
-};
+export type CheckResponse =
+  | {
+      ok: true;
+      address: string;
+      resolvedFromName: string | null;
+      stats: ActivityStats;
+      score: ScoreResult;
+    }
+  | {
+      ok: false;
+      error: string;
+    };

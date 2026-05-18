@@ -24,12 +24,10 @@ const GROUP_LABELS: Record<Criterion["group"], string> = {
 };
 
 function GroupRow({
-  group,
   label,
   items,
   loading,
 }: {
-  group: Criterion["group"];
   label: string;
   items: Criterion[];
   loading: boolean;
@@ -96,7 +94,7 @@ export function CriteriaList({ score, loading }: Props) {
     return (
       <div>
         {GROUP_ORDER.map((g) => (
-          <GroupRow key={g} group={g} label={GROUP_LABELS[g]} items={[]} loading />
+          <GroupRow key={g} label={GROUP_LABELS[g]} items={[]} loading />
         ))}
       </div>
     );
@@ -117,7 +115,6 @@ export function CriteriaList({ score, loading }: Props) {
       {GROUP_ORDER.map((g) => (
         <GroupRow
           key={g}
-          group={g}
           label={GROUP_LABELS[g]}
           items={byGroup[g]}
           loading={false}

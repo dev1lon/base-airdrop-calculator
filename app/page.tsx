@@ -1,59 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { AddressInput } from "@/components/AddressInput";
 import { EligibilityPanel } from "@/components/EligibilityPanel";
 import { CriteriaList } from "@/components/CriteriaList";
 import { ValuationInputs } from "@/components/ValuationInputs";
-import type { CheckResponse, ConfigResponse, ScoreResult } from "@/lib/types";
-
-const ARB_AIRDROP_PCT = 11.62;
+import { checkAddress } from "@/lib/check";
+import {
+  ARB_AIRDROP_PCT,
+  DEFAULT_AIRDROP_PCT,
+  DEFAULT_FDV,
+  DEFAULT_SUPPLY,
+} from "@/lib/scoring";
+import type { ScoreResult } from "@/lib/types";
 
 export default function Page() {
-  const [config, setConfig] = useState<ConfigResponse | null>(null);
-
   const [address, setAddress] = useState<string | null>(null);
   const [resolvedFromName, setResolvedFromName] = useState<string | null>(null);
   const [score, setScore] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [fdv, setFdv] = useState<number | null>(null);
-  const [airdropPct, setAirdropPct] = useState<number | null>(null);
-  const [totalSupply, setTotalSupply] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetch("/api/config")
-      .then((r) => r.json())
-      .then((c: ConfigResponse) => {
-        setConfig(c);
-        setFdv(c.defaultFdv);
-        setAirdropPct(c.defaultAirdropPct);
-        setTotalSupply(c.defaultSupply);
-      })
-      .catch(() => setError("Failed to load config"));
-  }, []);
+  const [fdv, setFdv] = useState<number>(DEFAULT_FDV);
+  const [airdropPct, setAirdropPct] = useState<number>(DEFAULT_AIRDROP_PCT);
+  const [totalSupply, setTotalSupply] = useState<number>(DEFAULT_SUPPLY);
 
   const baseTokens = score?.baseTokens ?? 0;
-  const safePct = airdropPct ?? 0;
-  const safeFdv = fdv ?? 0;
-  const safeSupply = totalSupply && totalSupply > 0 ? totalSupply : 1;
-  const scaledTokens = Math.round((baseTokens * safePct) / ARB_AIRDROP_PCT);
-  const userUsd = scaledTokens * (safeFdv / safeSupply);
+  const safeSupply = totalSupply > 0 ? totalSupply : 1;
+  const scaledTokens = Math.round((baseTokens * airdropPct) / ARB_AIRDROP_PCT);
+  const userUsd = scaledTokens * (fdv / safeSupply);
 
   async function handleCheck(input: string) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/check?address=${encodeURIComponent(input)}`);
-      const json = (await res.json()) as CheckResponse;
-      if (!json.ok) {
-        setError(json.error);
+      const res = await checkAddress(input);
+      if (!res.ok) {
+        setError(res.error);
       } else {
-        setAddress(json.address);
-        setResolvedFromName(json.resolvedFromName);
-        setScore(json.score);
+        setAddress(res.address);
+        setResolvedFromName(res.resolvedFromName);
+        setScore(res.score);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
@@ -86,18 +74,16 @@ export default function Page() {
             />
           </div>
 
-          {config && fdv != null && airdropPct != null && totalSupply != null && (
-            <div className="mt-10">
-              <ValuationInputs
-                fdv={fdv}
-                setFdv={setFdv}
-                airdropPct={airdropPct}
-                setAirdropPct={setAirdropPct}
-                totalSupply={totalSupply}
-                setTotalSupply={setTotalSupply}
-              />
-            </div>
-          )}
+          <div className="mt-10">
+            <ValuationInputs
+              fdv={fdv}
+              setFdv={setFdv}
+              airdropPct={airdropPct}
+              setAirdropPct={setAirdropPct}
+              totalSupply={totalSupply}
+              setTotalSupply={setTotalSupply}
+            />
+          </div>
         </div>
 
         <div

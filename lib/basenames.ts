@@ -32,13 +32,12 @@ const RESOLVER_ABI = [
 ] as const;
 
 const RPC_URLS = [
-  process.env.BASE_RPC_URL,
   "https://base-rpc.publicnode.com",
   "https://base.drpc.org",
   "https://rpc.ankr.com/base",
   "https://base.llamarpc.com",
   "https://mainnet.base.org",
-].filter((u): u is string => Boolean(u));
+];
 
 const client = createPublicClient({
   chain: base,
