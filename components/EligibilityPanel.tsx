@@ -25,16 +25,7 @@ function fmtUsd(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
-function buildShareUrl(tokens: number, usd: number): string {
-  const text =
-    `I'm projected to receive ${fmtNum(tokens)} $BASE (~${fmtUsd(usd)}) ` +
-    `in a hypothetical Base airdrop, scored with Arbitrum's legendary rubric.\n\n` +
-    `Check yours 👉 https://base-airdrop-calculator.onrender.com\n\n` +
-    `by @devilonnn`;
-  return `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
-}
-
-const PANEL_HEIGHT = "min-h-[460px]";
+const PANEL_HEIGHT = "min-h-[340px]";
 
 export function EligibilityPanel({ address, resolvedFromName, score, scaledTokens, userUsd, loading }: Props) {
   if (loading && !score) {
@@ -102,16 +93,6 @@ export function EligibilityPanel({ address, resolvedFromName, score, scaledToken
             </span>
             {addrLabel && <span className="font-mono">{addrLabel}</span>}
           </div>
-
-          <a
-            href={buildShareUrl(scaledTokens, userUsd)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 bg-base-text hover:bg-black text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
-          >
-            Share on X
-            <span aria-hidden>→</span>
-          </a>
         </>
       ) : (
         <>
