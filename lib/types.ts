@@ -33,6 +33,7 @@ export type ScoreResult = {
 export type CheckResponse = {
   ok: true;
   address: string;
+  resolvedFromName: string | null;
   stats: ActivityStats;
   score: ScoreResult;
 } | {

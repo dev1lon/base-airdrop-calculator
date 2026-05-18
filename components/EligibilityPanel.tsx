@@ -4,6 +4,7 @@ import type { ScoreResult } from "@/lib/types";
 
 type Props = {
   address: string | null;
+  resolvedFromName: string | null;
   score: ScoreResult | null;
   scaledTokens: number;
   userUsd: number;
@@ -24,7 +25,7 @@ function fmtUsd(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
-export function EligibilityPanel({ address, score, scaledTokens, userUsd, loading }: Props) {
+export function EligibilityPanel({ address, resolvedFromName, score, scaledTokens, userUsd, loading }: Props) {
   if (loading) {
     return (
       <div>
@@ -79,7 +80,9 @@ export function EligibilityPanel({ address, score, scaledTokens, userUsd, loadin
       )}
 
       {address && (
-        <p className="text-xs text-base-mute mt-6 font-mono">{shortAddr(address)}</p>
+        <p className="text-xs text-base-mute mt-6 font-mono">
+          {resolvedFromName ? `${resolvedFromName} → ${shortAddr(address)}` : shortAddr(address)}
+        </p>
       )}
     </div>
   );

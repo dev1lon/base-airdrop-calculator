@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAddress } from "viem";
 import { analyzeAddress } from "@/lib/analyze";
 import { resolveBaseName } from "@/lib/basenames";
+import { getClientIp, rateLimit } from "@/lib/ratelimit";
 import { score } from "@/lib/scoring";
 import type { CheckResponse } from "@/lib/types";
 
@@ -9,6 +10,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request): Promise<NextResponse<CheckResponse>> {
+  const limit = rateLimit(getClientIp(req.headers));
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, error: "Too many requests, slow down" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) } }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const raw = (searchParams.get("address") || "").trim();
   if (!raw) {
@@ -16,6 +25,7 @@ export async function GET(req: Request): Promise<NextResponse<CheckResponse>> {
   }
 
   let address = raw;
+  let resolvedFromName: string | null = null;
   if (!isAddress(address)) {
     if (/\.base(\.eth)?$/i.test(address)) {
       const name = address.endsWith(".eth") ? address : `${address}.eth`;
@@ -27,6 +37,7 @@ export async function GET(req: Request): Promise<NextResponse<CheckResponse>> {
         );
       }
       address = resolved;
+      resolvedFromName = name;
     } else {
       return NextResponse.json(
         { ok: false, error: "Invalid address or Base Name" },
@@ -38,9 +49,18 @@ export async function GET(req: Request): Promise<NextResponse<CheckResponse>> {
   try {
     const stats = await analyzeAddress(address);
     const sc = score(stats);
-    return NextResponse.json({ ok: true, address, stats, score: sc });
+    return NextResponse.json({
+      ok: true,
+      address,
+      resolvedFromName,
+      stats,
+      score: sc,
+    });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+    console.error("[/api/check] error:", e);
+    return NextResponse.json(
+      { ok: false, error: "Internal error" },
+      { status: 500 }
+    );
   }
 }

@@ -17,6 +17,7 @@ export default function Page() {
   const [config, setConfig] = useState<ConfigResponse | null>(null);
 
   const [address, setAddress] = useState<string | null>(null);
+  const [resolvedFromName, setResolvedFromName] = useState<string | null>(null);
   const [score, setScore] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +72,7 @@ export default function Page() {
     setLoading(true);
     setError(null);
     setScore(null);
+    setResolvedFromName(null);
     try {
       const res = await fetch(`/api/check?address=${encodeURIComponent(input)}`);
       const json = (await res.json()) as CheckResponse;
@@ -79,6 +81,7 @@ export default function Page() {
         setAddress(null);
       } else {
         setAddress(json.address);
+        setResolvedFromName(json.resolvedFromName);
         setScore(json.score);
       }
     } catch (e) {
@@ -101,6 +104,7 @@ export default function Page() {
         <div>
           <EligibilityPanel
             address={address}
+            resolvedFromName={resolvedFromName}
             score={score}
             scaledTokens={scaledTokens}
             userUsd={userUsd}

@@ -18,15 +18,6 @@ export const ARB_AIRDROP_PCT = 11.62;
 export const DEFAULT_FDV = 5_000_000_000;
 export const DEFAULT_AIRDROP_PCT = 25;
 
-export const GROUP_LABELS: Record<Criterion["group"], string> = {
-  bridged: "BRIDGED TO BASE",
-  time: "TRANSACTIONS OVER TIME",
-  frequency: "TRANSACTION FREQUENCY AND INTERACTION",
-  value: "TRANSACTION VALUE",
-  bridgedValue: "ASSETS BRIDGED TO BASE",
-  basename: "OWNS A BASE NAME",
-};
-
 export type Valuation = {
   scaledTokens: number;
   tokenPrice: number;

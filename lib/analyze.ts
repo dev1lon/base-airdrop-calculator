@@ -1,6 +1,6 @@
 import { getEthBalance, getInternalTxs, getNormalTxs, getTokenTxs } from "./basescan";
 import { lookupBaseName } from "./basenames";
-import { getEthPriceUsd, tokenUsdValue } from "./pricing";
+import { getPrices, tokenUsdValue } from "./pricing";
 import type { ActivityStats } from "./types";
 
 const FORTY_EIGHT_HOURS_S = 48 * 60 * 60;
@@ -13,14 +13,15 @@ function isContract(input: string): boolean {
 export async function analyzeAddress(address: string): Promise<ActivityStats> {
   const lower = address.toLowerCase();
 
-  const [normal, internal, tokens, balance, ethPrice, name] = await Promise.all([
+  const [normal, internal, tokens, balance, prices, name] = await Promise.all([
     getNormalTxs(address),
     getInternalTxs(address),
     getTokenTxs(address),
     getEthBalance(address),
-    getEthPriceUsd(),
+    getPrices(),
     lookupBaseName(address),
   ]);
+  const ethPrice = prices.eth;
 
   const months = new Set<string>();
   const contracts = new Set<string>();
@@ -28,9 +29,7 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
   let aggValueUsd = 0;
   let bridgedUsd = 0;
   let hasBridged = false;
-
-  const outgoing = normal.filter((t) => t.from?.toLowerCase() === lower);
-  const txCount = outgoing.length;
+  let txCount = 0;
 
   for (const tx of normal) {
     const ts = Number(tx.timeStamp);
@@ -40,6 +39,7 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
     months.add(`${d.getUTCFullYear()}-${d.getUTCMonth()}`);
 
     if (tx.from?.toLowerCase() === lower) {
+      txCount++;
       if (tx.to && isContract(tx.input)) {
         contracts.add(tx.to.toLowerCase());
       }
@@ -70,7 +70,7 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
     }
     if (t.from?.toLowerCase() === lower) {
       const decimals = Number(t.tokenDecimal || "18");
-      const usd = tokenUsdValue(t.contractAddress, BigInt(t.value || "0"), decimals, ethPrice);
+      const usd = tokenUsdValue(t.contractAddress, BigInt(t.value || "0"), decimals, prices);
       aggValueUsd += usd;
     }
     if (
@@ -79,7 +79,7 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
     ) {
       hasBridged = true;
       const decimals = Number(t.tokenDecimal || "18");
-      const usd = tokenUsdValue(t.contractAddress, BigInt(t.value || "0"), decimals, ethPrice);
+      const usd = tokenUsdValue(t.contractAddress, BigInt(t.value || "0"), decimals, prices);
       bridgedUsd += usd;
     }
   }
