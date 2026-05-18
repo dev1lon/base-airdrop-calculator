@@ -71,14 +71,11 @@ export default function Page() {
   async function handleCheck(input: string) {
     setLoading(true);
     setError(null);
-    setScore(null);
-    setResolvedFromName(null);
     try {
       const res = await fetch(`/api/check?address=${encodeURIComponent(input)}`);
       const json = (await res.json()) as CheckResponse;
       if (!json.ok) {
         setError(json.error);
-        setAddress(null);
       } else {
         setAddress(json.address);
         setResolvedFromName(json.resolvedFromName);
@@ -102,14 +99,16 @@ export default function Page() {
 
       <div className="mx-auto max-w-6xl px-6 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 border-t border-base-border/60 pt-12">
         <div>
-          <EligibilityPanel
-            address={address}
-            resolvedFromName={resolvedFromName}
-            score={score}
-            scaledTokens={scaledTokens}
-            userUsd={userUsd}
-            loading={loading}
-          />
+          <div className={loading ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
+            <EligibilityPanel
+              address={address}
+              resolvedFromName={resolvedFromName}
+              score={score}
+              scaledTokens={scaledTokens}
+              userUsd={userUsd}
+              loading={loading && !score}
+            />
+          </div>
 
           {config && fdv != null && airdropPct != null && totalSupply != null && (
             <div className="mt-10">
@@ -125,8 +124,8 @@ export default function Page() {
           )}
         </div>
 
-        <div>
-          <CriteriaList score={score} loading={loading} />
+        <div className={loading ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
+          <CriteriaList score={score} loading={loading && !score} />
         </div>
       </div>
 
