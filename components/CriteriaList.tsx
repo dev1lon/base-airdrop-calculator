@@ -76,7 +76,7 @@ function GroupRow({
                   {item.label}
                 </div>
                 {item.detail && (
-                  <div className="text-[11px] text-base-mute/50 font-mono mt-0.5">
+                  <div className="text-[12px] text-base-mute font-mono mt-0.5">
                     {item.detail}
                   </div>
                 )}
