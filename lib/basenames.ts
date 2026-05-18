@@ -1,4 +1,4 @@
-import { createPublicClient, http, namehash, keccak256, toHex, encodePacked } from "viem";
+import { createPublicClient, http, fallback, namehash, keccak256, toHex, encodePacked } from "viem";
 import { base } from "viem/chains";
 
 const REGISTRY = "0xb94704422c2a1e396835a571837aa5ae53285a95" as const;
@@ -31,9 +31,21 @@ const RESOLVER_ABI = [
   },
 ] as const;
 
+const RPC_URLS = [
+  process.env.BASE_RPC_URL,
+  "https://base-rpc.publicnode.com",
+  "https://base.drpc.org",
+  "https://rpc.ankr.com/base",
+  "https://base.llamarpc.com",
+  "https://mainnet.base.org",
+].filter((u): u is string => Boolean(u));
+
 const client = createPublicClient({
   chain: base,
-  transport: http(process.env.BASE_RPC_URL || "https://mainnet.base.org"),
+  transport: fallback(
+    RPC_URLS.map((url) => http(url, { timeout: 6_000, retryCount: 0 })),
+    { rank: false, retryCount: 1 }
+  ),
 });
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
@@ -80,7 +92,8 @@ export async function resolveBaseName(name: string): Promise<string | null> {
     )) as string;
     if (!addr || addr.toLowerCase() === ZERO_ADDR) return null;
     return addr;
-  } catch {
+  } catch (e) {
+    console.error("[resolveBaseName]", name, e instanceof Error ? e.message : e);
     return null;
   }
 }
@@ -89,7 +102,10 @@ export async function lookupBaseName(address: string): Promise<string | null> {
   try {
     const node = reverseNode(address);
     const resolver = await getResolver(node);
-    if (!resolver) return null;
+    if (!resolver) {
+      console.error("[lookupBaseName] no resolver for reverse node of", address);
+      return null;
+    }
     const name = (await withTimeout(
       client.readContract({
         address: resolver,
@@ -99,12 +115,17 @@ export async function lookupBaseName(address: string): Promise<string | null> {
       }),
       8000
     )) as string;
-    if (!name) return null;
+    if (!name) {
+      console.error("[lookupBaseName] empty name from resolver for", address);
+      return null;
+    }
 
     const forward = await resolveBaseName(name);
     if (forward && forward.toLowerCase() === address.toLowerCase()) return name;
+    console.error("[lookupBaseName] forward mismatch", { address, name, forward });
     return null;
-  } catch {
+  } catch (e) {
+    console.error("[lookupBaseName]", address, e instanceof Error ? e.message : e);
     return null;
   }
 }
