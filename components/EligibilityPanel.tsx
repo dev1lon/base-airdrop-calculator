@@ -25,19 +25,24 @@ function fmtUsd(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
+const PANEL_HEIGHT = "min-h-[340px]";
+
 export function EligibilityPanel({ address, resolvedFromName, score, scaledTokens, userUsd, loading }: Props) {
-  if (loading) {
+  if (loading && !score) {
     return (
-      <div>
+      <div className={PANEL_HEIGHT}>
         <h1 className="text-4xl sm:text-5xl font-light leading-[1.05]">Checking…</h1>
-        <p className="text-base-mute mt-6 text-lg">Scanning wallet activity on Base mainnet.</p>
+        <p className="text-base-mute mt-6 text-base">Scanning wallet activity on Base mainnet.</p>
+        <div className="mt-8 h-3 w-32 bg-base-border/40 rounded animate-pulse" />
+        <div className="mt-3 h-11 w-52 bg-base-border/40 rounded-full animate-pulse" />
+        <div className="mt-4 h-7 w-24 bg-base-border/40 rounded animate-pulse" />
       </div>
     );
   }
 
   if (!score) {
     return (
-      <div>
+      <div className={PANEL_HEIGHT}>
         <h1 className="text-4xl sm:text-5xl font-light leading-[1.05]">
           $BASE<br />Airdrop<br />Calculator
         </h1>
@@ -53,7 +58,7 @@ export function EligibilityPanel({ address, resolvedFromName, score, scaledToken
   const eligible = score.eligible;
 
   return (
-    <div>
+    <div className={PANEL_HEIGHT}>
       <h1 className="text-4xl sm:text-5xl font-light leading-[1.05]">
         {eligible ? (
           <>You&rsquo;re<br />Eligible!</>

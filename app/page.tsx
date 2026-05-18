@@ -99,14 +99,16 @@ export default function Page() {
 
       <div className="mx-auto max-w-6xl px-6 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 border-t border-base-border/60 pt-12">
         <div>
-          <div className={loading ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
+          <div
+            className={`transition-opacity duration-200 ${loading && score ? "opacity-60" : ""}`}
+          >
             <EligibilityPanel
               address={address}
               resolvedFromName={resolvedFromName}
               score={score}
               scaledTokens={scaledTokens}
               userUsd={userUsd}
-              loading={loading && !score}
+              loading={loading}
             />
           </div>
 
@@ -124,16 +126,31 @@ export default function Page() {
           )}
         </div>
 
-        <div className={loading ? "opacity-60 transition-opacity duration-200" : "transition-opacity duration-200"}>
+        <div
+          className={`transition-opacity duration-200 ${loading && score ? "opacity-60" : ""}`}
+        >
           <CriteriaList score={score} loading={loading && !score} />
         </div>
       </div>
 
       <footer className="border-t border-base-border/60">
-        <div className="mx-auto max-w-6xl px-6 py-6 text-xs text-base-mute">
-          Hypothetical calculator. Not affiliated with Base, Coinbase, or any
-          token issuer. Scoring mirrors the public Arbitrum airdrop
-          eligibility specification.
+        <div className="mx-auto max-w-6xl px-6 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between text-xs text-base-mute">
+          <span className="max-w-2xl">
+            Hypothetical calculator. Not affiliated with Base, Coinbase, or any
+            token issuer. Scoring mirrors the public Arbitrum airdrop
+            eligibility specification.
+          </span>
+          <span className="whitespace-nowrap">
+            created by{" "}
+            <a
+              href="https://x.com/devilonnn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-base-text hover:text-base-blue transition-colors font-mono"
+            >
+              @devilonnn
+            </a>
+          </span>
         </div>
       </footer>
     </main>

@@ -144,19 +144,6 @@ export function ValuationInputs({
   totalSupply,
   setTotalSupply,
 }: Props) {
-  const [pctRaw, setPctRaw] = useState(() => String(airdropPct));
-  const [pctBad, setPctBad] = useState(false);
-
-  useEffect(() => {
-    const num = Number(pctRaw);
-    if (pctRaw === "" || !Number.isFinite(num) || num < 0) {
-      setPctBad(pctRaw.length > 0);
-      return;
-    }
-    setPctBad(false);
-    if (num !== airdropPct) setAirdropPct(num);
-  }, [pctRaw]);
-
   return (
     <div className="bg-base-panel/60 border border-base-border rounded-2xl p-6 space-y-5">
       <AmountRow label="Fully-diluted valuation" value={fdv} onChange={setFdv} />
@@ -164,19 +151,24 @@ export function ValuationInputs({
       <SupplyRow value={totalSupply} onChange={setTotalSupply} />
 
       <div>
-        <label className="uppercase text-xs tracking-widest text-base-mute">
-          % of supply allocated to airdrop
-        </label>
-        <div className="mt-2 flex items-center bg-base-bg border border-base-border rounded-lg focus-within:border-base-blue transition-colors">
-          <input
-            type="text"
-            inputMode="decimal"
-            value={pctRaw}
-            onChange={(e) => setPctRaw(e.target.value)}
-            placeholder="11.62"
-            className={`flex-1 bg-transparent pl-4 py-3 font-mono text-lg outline-none ${pctBad ? "text-base-red" : "text-base-text"}`}
-          />
-          <span className="pr-4 pl-2 text-base-mute font-mono">%</span>
+        <div className="flex items-baseline justify-between">
+          <label className="uppercase text-xs tracking-widest text-base-mute">
+            % of supply allocated to airdrop
+          </label>
+          <span className="font-mono text-lg text-base-text">{airdropPct.toFixed(2)}%</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={0.1}
+          value={Math.min(100, Math.max(0, airdropPct))}
+          onChange={(e) => setAirdropPct(Number(e.target.value))}
+          className="w-full mt-4"
+        />
+        <div className="flex justify-between text-[10px] text-base-mute/70 mt-1 font-mono">
+          <span>0%</span>
+          <span>100%</span>
         </div>
       </div>
     </div>
