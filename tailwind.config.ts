@@ -6,15 +6,18 @@ const config: Config = {
     extend: {
       colors: {
         base: {
-          bg: "#0A0B14",
-          panel: "#10121C",
-          border: "#1E2030",
+          bg: "#FFFFFF",
+          panel: "#F4F5F8",
+          panelStrong: "#EDEEF2",
+          border: "#E5E7EB",
           blue: "#0052FF",
-          blueLight: "#3B82F6",
-          green: "#22C55E",
-          red: "#EF4444",
-          text: "#E5E7EB",
-          mute: "#8B8FA3",
+          blueHover: "#0040CC",
+          blueLight: "#E8EEFF",
+          green: "#15A36E",
+          red: "#DC2626",
+          text: "#0A0B0E",
+          mute: "#5C6473",
+          muteSoft: "#8B8FA3",
         },
       },
       fontFamily: {

@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className="stars" />
+        <div className="page-bg" />
         {children}
       </body>
     </html>

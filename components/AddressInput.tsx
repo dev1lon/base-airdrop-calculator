@@ -28,7 +28,7 @@ export function AddressInput({ onSubmit, loading }: Props) {
       <button
         type="submit"
         disabled={loading || !value.trim()}
-        className="bg-base-blue hover:bg-base-blueLight disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold tracking-wide rounded-full px-6 py-3 text-sm transition-colors"
+        className="bg-base-blue hover:bg-base-blueHover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold tracking-wide rounded-full px-6 py-3 text-sm transition-colors"
       >
         {loading ? "CHECKING..." : "CHECK ELIGIBILITY"}
       </button>

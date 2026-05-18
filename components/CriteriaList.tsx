@@ -42,7 +42,7 @@ function GroupRow({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between py-4 px-1 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between py-4 px-1 text-left hover:bg-black/[0.03] transition-colors"
         disabled={loading}
       >
         <div className="flex items-center gap-3">
