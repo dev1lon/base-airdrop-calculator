@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { AddressInput } from "@/components/AddressInput";
 import { EligibilityPanel } from "@/components/EligibilityPanel";
 import { CriteriaList } from "@/components/CriteriaList";
 import { ValuationInputs } from "@/components/ValuationInputs";
-import type {
-  CheckResponse,
-  ConfigResponse,
-  ScoreResult,
-  ValuationResponse,
-} from "@/lib/types";
+import type { CheckResponse, ConfigResponse, ScoreResult } from "@/lib/types";
+
+const ARB_AIRDROP_PCT = 11.62;
 
 export default function Page() {
   const [config, setConfig] = useState<ConfigResponse | null>(null);
@@ -26,9 +23,6 @@ export default function Page() {
   const [airdropPct, setAirdropPct] = useState<number | null>(null);
   const [totalSupply, setTotalSupply] = useState<number | null>(null);
 
-  const [scaledTokens, setScaledTokens] = useState(0);
-  const [userUsd, setUserUsd] = useState(0);
-
   useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
@@ -41,32 +35,12 @@ export default function Page() {
       .catch(() => setError("Failed to load config"));
   }, []);
 
-  const valueAbort = useRef<AbortController | null>(null);
-  const valueTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (!score || fdv == null || airdropPct == null || totalSupply == null) {
-      setScaledTokens(0);
-      setUserUsd(0);
-      return;
-    }
-    if (valueTimer.current) clearTimeout(valueTimer.current);
-    valueTimer.current = setTimeout(() => {
-      valueAbort.current?.abort();
-      const ctrl = new AbortController();
-      valueAbort.current = ctrl;
-      const url = `/api/value?baseTokens=${score.baseTokens}&fdv=${fdv}&airdropPct=${airdropPct}&totalSupply=${totalSupply}`;
-      fetch(url, { signal: ctrl.signal })
-        .then((r) => r.json())
-        .then((j: ValuationResponse) => {
-          setScaledTokens(j.valuation.scaledTokens);
-          setUserUsd(j.valuation.userUsd);
-        })
-        .catch(() => {});
-    }, 120);
-    return () => {
-      if (valueTimer.current) clearTimeout(valueTimer.current);
-    };
-  }, [score, fdv, airdropPct, totalSupply]);
+  const baseTokens = score?.baseTokens ?? 0;
+  const safePct = airdropPct ?? 0;
+  const safeFdv = fdv ?? 0;
+  const safeSupply = totalSupply && totalSupply > 0 ? totalSupply : 1;
+  const scaledTokens = Math.round((baseTokens * safePct) / ARB_AIRDROP_PCT);
+  const userUsd = scaledTokens * (safeFdv / safeSupply);
 
   async function handleCheck(input: string) {
     setLoading(true);
