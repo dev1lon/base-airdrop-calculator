@@ -2,7 +2,6 @@ import { createPublicClient, http, namehash, keccak256, toHex, encodePacked } fr
 import { base } from "viem/chains";
 
 const REGISTRY = "0xb94704422c2a1e396835a571837aa5ae53285a95" as const;
-const REVERSE_REGISTRAR = "0x79ea96012eea67a83431f1701b3dff7e37f9e282" as const;
 const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
 
 const REGISTRY_ABI = [
@@ -28,16 +27,6 @@ const RESOLVER_ABI = [
     type: "function",
     stateMutability: "view",
     inputs: [{ name: "node", type: "bytes32" }],
-    outputs: [{ name: "", type: "string" }],
-  },
-] as const;
-
-const REVERSE_REGISTRAR_ABI = [
-  {
-    name: "nameForAddr",
-    type: "function",
-    stateMutability: "view",
-    inputs: [{ name: "addr", type: "address" }],
     outputs: [{ name: "", type: "string" }],
   },
 ] as const;
@@ -98,36 +87,18 @@ export async function resolveBaseName(name: string): Promise<string | null> {
 
 export async function lookupBaseName(address: string): Promise<string | null> {
   try {
-    let name: string | null = null;
-    try {
-      name = (await withTimeout(
-        client.readContract({
-          address: REVERSE_REGISTRAR,
-          abi: REVERSE_REGISTRAR_ABI,
-          functionName: "nameForAddr",
-          args: [address as `0x${string}`],
-        }),
-        8000
-      )) as string;
-    } catch {
-      name = null;
-    }
-
-    if (!name) {
-      const node = reverseNode(address);
-      const resolver = await getResolver(node);
-      if (!resolver) return null;
-      name = (await withTimeout(
-        client.readContract({
-          address: resolver,
-          abi: RESOLVER_ABI,
-          functionName: "name",
-          args: [node],
-        }),
-        8000
-      )) as string;
-    }
-
+    const node = reverseNode(address);
+    const resolver = await getResolver(node);
+    if (!resolver) return null;
+    const name = (await withTimeout(
+      client.readContract({
+        address: resolver,
+        abi: RESOLVER_ABI,
+        functionName: "name",
+        args: [node],
+      }),
+      8000
+    )) as string;
     if (!name) return null;
 
     const forward = await resolveBaseName(name);
