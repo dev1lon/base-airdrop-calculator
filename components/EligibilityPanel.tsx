@@ -25,7 +25,16 @@ function fmtUsd(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
-const PANEL_HEIGHT = "min-h-[340px]";
+function buildShareUrl(tokens: number, usd: number): string {
+  const text =
+    `I'm projected to receive ${fmtNum(tokens)} $BASE (~${fmtUsd(usd)}) ` +
+    `in a hypothetical Base airdrop, scored with Arbitrum's legendary rubric.\n\n` +
+    `Check yours 👉 https://base-airdrop-calculator.onrender.com\n\n` +
+    `by @devilonnn`;
+  return `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
+}
+
+const PANEL_HEIGHT = "min-h-[460px]";
 
 export function EligibilityPanel({ address, resolvedFromName, score, scaledTokens, userUsd, loading }: Props) {
   if (loading && !score) {
@@ -56,6 +65,11 @@ export function EligibilityPanel({ address, resolvedFromName, score, scaledToken
   }
 
   const eligible = score.eligible;
+  const addrLabel = address
+    ? resolvedFromName
+      ? `${resolvedFromName} → ${shortAddr(address)}`
+      : shortAddr(address)
+    : null;
 
   return (
     <div className={PANEL_HEIGHT}>
@@ -75,19 +89,44 @@ export function EligibilityPanel({ address, resolvedFromName, score, scaledToken
             <img src="/coin.png" alt="" width={28} height={28} className="rounded-full" />
             <span className="font-mono text-lg">{fmtNum(scaledTokens)} $BASE</span>
           </div>
-          <div className="mt-4 font-mono text-2xl text-base-green">{fmtUsd(userUsd)}</div>
+
+          <p className="uppercase text-xs tracking-widest text-base-mute mt-6">Estimated value</p>
+          <div className="mt-1 font-mono text-3xl text-base-green leading-none">
+            {fmtUsd(userUsd)}
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-base-mute">
+            <span className="inline-flex items-center gap-1.5 bg-base-panel border border-base-border rounded-full px-3 py-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-base-green" />
+              <span className="font-mono">Score {score.finalPoints} / 15</span>
+            </span>
+            {addrLabel && <span className="font-mono">{addrLabel}</span>}
+          </div>
+
+          <a
+            href={buildShareUrl(scaledTokens, userUsd)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2 bg-base-text hover:bg-black text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
+          >
+            Share on X
+            <span aria-hidden>→</span>
+          </a>
         </>
       ) : (
-        <p className="text-base-mute mt-6 text-base max-w-md">
-          You scored {score.finalPoints} point{score.finalPoints === 1 ? "" : "s"}.
-          A minimum of three points is required to be eligible.
-        </p>
-      )}
-
-      {address && (
-        <p className="text-xs text-base-mute mt-6 font-mono">
-          {resolvedFromName ? `${resolvedFromName} → ${shortAddr(address)}` : shortAddr(address)}
-        </p>
+        <>
+          <p className="text-base-mute mt-6 text-base max-w-md">
+            You scored {score.finalPoints} point{score.finalPoints === 1 ? "" : "s"}.
+            A minimum of three points is required to be eligible.
+          </p>
+          <div className="mt-6 inline-flex items-center gap-1.5 bg-base-panel border border-base-border rounded-full px-3 py-1 text-xs text-base-mute">
+            <span className="w-1.5 h-1.5 rounded-full bg-base-red" />
+            <span className="font-mono">Score {score.finalPoints} / 15</span>
+          </div>
+          {addrLabel && (
+            <p className="text-xs text-base-mute mt-4 font-mono">{addrLabel}</p>
+          )}
+        </>
       )}
     </div>
   );
