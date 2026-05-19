@@ -1,5 +1,8 @@
 "use client";
 
+import { useRef, useState } from "react";
+import { toPng } from "html-to-image";
+import { ShareCard } from "./ShareCard";
 import type { ScoreResult } from "@/lib/types";
 
 type Props = {
@@ -25,9 +28,51 @@ function fmtUsd(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
+function tweetText(userUsd: number): string {
+  const usd = fmtUsd(userUsd);
+  const url =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://base-airdrop-calculator.onrender.com";
+  return `I'd get ${usd} in $BASE airdrop according to Arbitrum criteria 👀 check yours: ${url}`;
+}
+
 const PANEL_HEIGHT = "min-h-[340px]";
 
 export function EligibilityPanel({ address, resolvedFromName, score, scaledTokens, userUsd, loading }: Props) {
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [sharing, setSharing] = useState(false);
+
+  async function handleShare() {
+    if (sharing) return;
+    const node = cardRef.current;
+    const text = tweetText(userUsd);
+    const intent = `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
+
+    if (!node) {
+      window.open(intent, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    setSharing(true);
+    try {
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: "#FFFFFF",
+      });
+      const link = document.createElement("a");
+      link.download = "base-airdrop.png";
+      link.href = dataUrl;
+      link.click();
+    } catch (e) {
+      console.error("[share] capture failed:", e);
+    } finally {
+      setSharing(false);
+      window.open(intent, "_blank", "noopener,noreferrer");
+    }
+  }
+
   if (loading && !score) {
     return (
       <div className={PANEL_HEIGHT}>
@@ -93,6 +138,27 @@ export function EligibilityPanel({ address, resolvedFromName, score, scaledToken
             </span>
             {addrLabel && <span className="font-mono">{addrLabel}</span>}
           </div>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={sharing}
+            className="mt-5 inline-flex items-center gap-2 bg-base-text hover:bg-black disabled:opacity-60 text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
+          >
+            {sharing ? "Generating…" : "Share on X"}
+            <span aria-hidden>→</span>
+          </button>
+
+          {address && (
+            <ShareCard
+              ref={cardRef}
+              scaledTokens={scaledTokens}
+              userUsd={userUsd}
+              finalPoints={score.finalPoints}
+              address={address}
+              resolvedFromName={resolvedFromName}
+            />
+          )}
         </>
       ) : (
         <>

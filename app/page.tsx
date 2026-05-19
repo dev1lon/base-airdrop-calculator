@@ -54,12 +54,12 @@ export default function Page() {
     <main className="min-h-screen">
       <Header />
 
-      <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
         <AddressInput onSubmit={handleCheck} loading={loading} />
         {error && <p className="mt-3 text-sm text-base-red font-mono">{error}</p>}
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 border-t border-base-border/60 pt-12">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 border-t border-base-border/60 pt-12">
         <div>
           <div
             className={`transition-opacity duration-200 ${loading && score ? "opacity-60" : ""}`}
@@ -95,7 +95,7 @@ export default function Page() {
 
       <footer className="border-t border-base-border/60">
         <div
-          className="mx-auto max-w-6xl px-6 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between text-base-mute"
+          className="mx-auto max-w-6xl px-4 sm:px-6 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between text-base-mute"
           style={{ fontSize: "0.85rem" }}
         >
           <span className="max-w-2xl">
