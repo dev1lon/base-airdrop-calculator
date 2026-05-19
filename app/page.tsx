@@ -14,11 +14,12 @@ import {
   DEFAULT_FDV,
   DEFAULT_SUPPLY,
 } from "@/lib/scoring";
-import type { ScoreResult } from "@/lib/types";
+import type { ActivityStats, ScoreResult } from "@/lib/types";
 
 export default function Page() {
   const [address, setAddress] = useState<string | null>(null);
   const [resolvedFromName, setResolvedFromName] = useState<string | null>(null);
+  const [stats, setStats] = useState<ActivityStats | null>(null);
   const [score, setScore] = useState<ScoreResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export default function Page() {
       } else {
         setAddress(res.address);
         setResolvedFromName(res.resolvedFromName);
+        setStats(res.stats);
         setScore(res.score);
       }
     } catch (e) {
@@ -94,6 +96,7 @@ export default function Page() {
                 finalPoints={score.finalPoints}
                 address={address}
                 resolvedFromName={resolvedFromName}
+                baseName={stats?.baseName ?? null}
               />
             </div>
           )}

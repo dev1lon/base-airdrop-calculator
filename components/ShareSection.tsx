@@ -10,6 +10,7 @@ type Props = {
   finalPoints: number;
   address: string;
   resolvedFromName: string | null;
+  baseName: string | null;
 };
 
 function fmtUsd(n: number): string {
@@ -23,7 +24,11 @@ function tweetText(userUsd: number): string {
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
       : "https://base-airdrop-calculator.onrender.com";
-  return `I'd get ${usd} in $BASE airdrop according to Arbitrum criteria 👀 check yours: ${url}`;
+  return (
+    `my $BASE airdrop estimate:  ${usd} 👀\n\n` +
+    `check yours → ${url}\n\n` +
+    `via @devilonnn`
+  );
 }
 
 export function ShareSection(props: Props) {
