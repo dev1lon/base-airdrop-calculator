@@ -85,6 +85,18 @@ export default function Page() {
               setTotalSupply={setTotalSupply}
             />
           </div>
+
+          {score && score.eligible && address && (
+            <div className="mt-10">
+              <ShareSection
+                scaledTokens={scaledTokens}
+                userUsd={userUsd}
+                finalPoints={score.finalPoints}
+                address={address}
+                resolvedFromName={resolvedFromName}
+              />
+            </div>
+          )}
         </div>
 
         <div
@@ -93,16 +105,6 @@ export default function Page() {
           <CriteriaList score={score} loading={loading && !score} />
         </div>
       </div>
-
-      {score && score.eligible && address && (
-        <ShareSection
-          scaledTokens={scaledTokens}
-          userUsd={userUsd}
-          finalPoints={score.finalPoints}
-          address={address}
-          resolvedFromName={resolvedFromName}
-        />
-      )}
 
       <footer className="border-t border-base-border/60">
         <div

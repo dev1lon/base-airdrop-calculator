@@ -32,7 +32,7 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
   return (
     <div
       ref={ref}
-      className="aspect-[1200/630] w-full bg-white border border-base-border rounded-2xl overflow-hidden p-5 sm:p-8 flex flex-col justify-between"
+      className="aspect-[1200/630] w-full bg-white border border-base-border rounded-2xl overflow-hidden px-5 sm:px-8 pt-3 sm:pt-4 pb-5 sm:pb-8 flex flex-col justify-between"
       style={{
         backgroundImage:
           "radial-gradient(circle at 15% 20%, rgba(0,82,255,0.10), transparent 45%)," +

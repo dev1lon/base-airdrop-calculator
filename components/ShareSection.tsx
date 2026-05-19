@@ -56,33 +56,31 @@ export function ShareSection(props: Props) {
   }
 
   return (
-    <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16">
-      <div className="max-w-xl mx-auto">
-        <p className="uppercase text-xs tracking-widest text-base-mute mb-3 text-center">
-          Share your result
-        </p>
+    <div>
+      <p className="uppercase text-xs tracking-widest text-base-mute mb-3">
+        Share your result
+      </p>
 
-        <ShareCard ref={cardRef} {...props} />
+      <ShareCard ref={cardRef} {...props} />
 
-        <div className="mt-5 flex flex-col sm:flex-row gap-3 sm:justify-center">
-          <button
-            type="button"
-            onClick={handleShare}
-            className="inline-flex items-center justify-center gap-2 bg-base-text hover:bg-black text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
-          >
-            Share on X
-            <span aria-hidden>→</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong disabled:opacity-60 text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
-          >
-            {saving ? "Generating…" : "Download image"}
-          </button>
-        </div>
+      <div className="mt-4 flex flex-col sm:flex-row gap-3">
+        <button
+          type="button"
+          onClick={handleShare}
+          className="inline-flex items-center justify-center gap-2 bg-base-text hover:bg-black text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
+        >
+          Share on X
+          <span aria-hidden>→</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong disabled:opacity-60 text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
+        >
+          {saving ? "Generating…" : "Download image"}
+        </button>
       </div>
-    </section>
+    </div>
   );
 }
