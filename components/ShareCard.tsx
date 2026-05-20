@@ -40,23 +40,25 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
           "radial-gradient(circle at 85% 85%, rgba(0,82,255,0.08), transparent 50%)",
       }}
     >
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/coin.png"
-          alt=""
-          className="rounded-full w-6 h-6 sm:w-8 sm:h-8"
-          crossOrigin="anonymous"
-        />
-        <span className="font-semibold tracking-wide text-[11px] sm:text-sm">
-          BASE AIRDROP CALCULATOR
+      <div className="flex items-center justify-between gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/coin.png"
+            alt=""
+            className="rounded-full w-6 h-6 sm:w-8 sm:h-8 shrink-0"
+            crossOrigin="anonymous"
+          />
+          <span className="font-semibold tracking-wide text-[11px] sm:text-sm truncate">
+            BASE AIRDROP CALCULATOR
+          </span>
+        </div>
+        <span className="inline-flex items-center bg-base-panel border border-base-border rounded-full px-2.5 sm:px-3 py-0.5 sm:py-1 font-mono text-[10px] sm:text-sm text-base-mute max-w-[55%] truncate">
+          {ident}
         </span>
       </div>
 
       <div>
-        <div className="font-mono text-base-mute text-[10px] sm:text-xs mb-1 sm:mb-2 truncate">
-          {ident}
-        </div>
         <div className="font-mono text-base-green font-semibold leading-none tracking-tight text-[clamp(2.5rem,9vw,5.5rem)]">
           {fmtUsd(userUsd)}
         </div>
