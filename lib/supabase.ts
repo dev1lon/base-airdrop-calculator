@@ -11,14 +11,18 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 export async function logCheck(
   wallet: string,
   score: number,
-  estimatedValue: number
+  coinsValue: number,
+  usdValue: number
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from("checks")
-      .insert([
-        { wallet, score, estimated_value: Math.round(estimatedValue) },
-      ]);
+    const { error } = await supabase.from("checks").insert([
+      {
+        wallet,
+        score,
+        coins_value: Math.round(coinsValue),
+        usd_value: Math.round(usdValue),
+      },
+    ]);
     if (error) {
       console.error("[supabase] logCheck failed", {
         message: error.message,

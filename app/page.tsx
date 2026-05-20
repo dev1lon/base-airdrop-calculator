@@ -51,7 +51,12 @@ export default function Page() {
           (res.score.baseTokens * airdropPct) / ARB_AIRDROP_PCT
         );
         const usdAtCheck = tokensAtCheck * (fdv / safeSupply);
-        logCheck(res.address, res.score.finalPoints, usdAtCheck);
+        logCheck(
+          res.address,
+          res.score.finalPoints,
+          tokensAtCheck,
+          usdAtCheck
+        );
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
