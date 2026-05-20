@@ -16,7 +16,9 @@ export async function logCheck(
   try {
     const { error } = await supabase
       .from("checks")
-      .insert([{ wallet, score, estimated_value: estimatedValue }]);
+      .insert([
+        { wallet, score, estimated_value: Math.round(estimatedValue) },
+      ]);
     if (error) {
       console.error("[supabase] logCheck failed", {
         message: error.message,
