@@ -58,26 +58,26 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
         </span>
       </div>
 
-      <div>
+      <div className="text-center mt-4 sm:mt-6">
         <div className="font-mono text-base-green font-semibold leading-none tracking-tight text-[clamp(2.5rem,9vw,5.5rem)]">
           {fmtUsd(userUsd)}
-        </div>
-        <div className="mt-3 sm:mt-5 inline-flex items-center gap-2 sm:gap-3 bg-base-panel border border-base-border rounded-full pl-1.5 pr-4 sm:pr-6 py-1.5 sm:py-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/coin.png"
-            alt=""
-            className="rounded-full w-5 h-5 sm:w-7 sm:h-7"
-            crossOrigin="anonymous"
-          />
-          <span className="font-mono text-xs sm:text-base">
-            {fmtNum(scaledTokens)} $BASE
-          </span>
         </div>
       </div>
 
       <div>
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-2 sm:gap-3 bg-base-panel border border-base-border rounded-full pl-1.5 pr-4 sm:pr-6 py-1.5 sm:py-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/coin.png"
+              alt=""
+              className="rounded-full w-5 h-5 sm:w-7 sm:h-7"
+              crossOrigin="anonymous"
+            />
+            <span className="font-mono text-xs sm:text-base">
+              {fmtNum(scaledTokens)} $BASE
+            </span>
+          </span>
           <span className="inline-flex items-center bg-base-panel border border-base-border rounded-full px-2.5 sm:px-3 py-0.5 sm:py-1 font-mono text-[10px] sm:text-sm text-base-mute">
             Score {finalPoints} / 15
           </span>
