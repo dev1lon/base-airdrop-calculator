@@ -33,7 +33,7 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
   return (
     <div
       ref={ref}
-      className="aspect-[1200/630] w-full bg-white border border-base-border rounded-2xl overflow-hidden px-5 sm:px-8 pt-3 sm:pt-4 pb-3 sm:pb-4 flex flex-col justify-between"
+      className="aspect-[1200/630] w-full bg-white border border-base-border rounded-2xl overflow-hidden px-5 sm:px-8 pt-3 sm:pt-4 pb-4 sm:pb-5 flex flex-col justify-between"
       style={{
         backgroundImage:
           "radial-gradient(circle at 15% 20%, rgba(0,82,255,0.10), transparent 45%)," +
@@ -54,8 +54,12 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
       </div>
 
       <div>
-        <div className="uppercase tracking-widest text-base-mute text-[10px] sm:text-xs mb-1 sm:mb-2">
-          You&rsquo;re Eligible!
+        <div className="flex items-center gap-2 text-base-mute text-[10px] sm:text-xs mb-1 sm:mb-2 min-w-0">
+          <span className="uppercase tracking-widest whitespace-nowrap">
+            You&rsquo;re Eligible
+          </span>
+          <span className="opacity-50">·</span>
+          <span className="font-mono truncate">{ident}</span>
         </div>
         <div className="font-mono text-base-green font-semibold leading-none tracking-tight text-[clamp(2.5rem,9vw,5.5rem)]">
           {fmtUsd(userUsd)}
@@ -74,14 +78,13 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between font-mono text-[10px] sm:text-sm text-base-mute">
-          <span className="truncate pr-2">{ident}</span>
-          <span className="whitespace-nowrap">Score {finalPoints} / 15</span>
-        </div>
-        <div className="mt-1.5 sm:mt-2 text-center text-[9px] sm:text-xs text-base-mute/80">
+      <div className="flex items-end justify-between gap-3">
+        <span className="text-[9px] sm:text-xs text-base-mute/80">
           Created by <span className="font-mono">@devilonnn</span>
-        </div>
+        </span>
+        <span className="inline-flex items-center bg-base-panel border border-base-border rounded-full px-2.5 sm:px-3 py-0.5 sm:py-1 font-mono text-[10px] sm:text-sm text-base-mute">
+          Score {finalPoints} / 15
+        </span>
       </div>
     </div>
   );
