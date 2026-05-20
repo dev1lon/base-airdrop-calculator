@@ -123,7 +123,7 @@ export default function Page() {
       </div>
 
       <footer className="border-t border-base-border/60">
-        {checkCount !== null && (
+        {checkCount !== null && checkCount > 0 && (
           <div
             className="mx-auto max-w-6xl px-4 sm:px-6 pt-5 pb-2 text-center text-base-mute"
             style={{ fontSize: "0.85rem" }}
