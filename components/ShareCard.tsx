@@ -58,10 +58,8 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
         </span>
       </div>
 
-      <div className="text-center mt-4 sm:mt-6">
-        <div className="font-mono text-base-green font-semibold leading-none tracking-tight text-[clamp(2.5rem,9vw,5.5rem)]">
-          {fmtUsd(userUsd)}
-        </div>
+      <div className="font-mono text-base-green font-semibold leading-none tracking-tight text-[clamp(2.5rem,9vw,5.5rem)]">
+        {fmtUsd(userUsd)}
       </div>
 
       <div>
