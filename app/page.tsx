@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { AddressInput } from "@/components/AddressInput";
 import { EligibilityPanel } from "@/components/EligibilityPanel";
@@ -14,7 +14,7 @@ import {
   DEFAULT_FDV,
   DEFAULT_SUPPLY,
 } from "@/lib/scoring";
-import { getCheckCount, logCheck } from "@/lib/supabase";
+import { logCheck } from "@/lib/supabase";
 import type { ActivityStats, ScoreResult } from "@/lib/types";
 
 export default function Page() {
@@ -28,11 +28,6 @@ export default function Page() {
   const [fdv, setFdv] = useState<number>(DEFAULT_FDV);
   const [airdropPct, setAirdropPct] = useState<number>(DEFAULT_AIRDROP_PCT);
   const [totalSupply, setTotalSupply] = useState<number>(DEFAULT_SUPPLY);
-
-  const [checkCount, setCheckCount] = useState<number | null>(null);
-  useEffect(() => {
-    getCheckCount().then(setCheckCount);
-  }, []);
 
   const baseTokens = score?.baseTokens ?? 0;
   const safeSupply = totalSupply > 0 ? totalSupply : 1;
@@ -57,7 +52,6 @@ export default function Page() {
         );
         const usdAtCheck = tokensAtCheck * (fdv / safeSupply);
         logCheck(res.address, res.score.finalPoints, usdAtCheck);
-        setCheckCount((c) => (c == null ? c : c + 1));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
@@ -123,17 +117,6 @@ export default function Page() {
       </div>
 
       <footer className="border-t border-base-border/60">
-        {checkCount !== null && checkCount > 0 && (
-          <div
-            className="mx-auto max-w-6xl px-4 sm:px-6 pt-5 pb-2 text-center text-base-mute"
-            style={{ fontSize: "0.85rem" }}
-          >
-            <span className="font-mono text-base-text">
-              {checkCount.toLocaleString("en-US")}
-            </span>{" "}
-            wallets checked
-          </div>
-        )}
         <div
           className="mx-auto max-w-6xl px-4 sm:px-6 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between text-base-mute"
           style={{ fontSize: "0.85rem" }}
