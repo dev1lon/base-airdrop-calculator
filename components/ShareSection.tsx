@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { toPng } from "html-to-image";
+import { toBlob, toPng } from "html-to-image";
 import { ShareCard } from "./ShareCard";
 
 type Props = {
@@ -34,6 +34,7 @@ function tweetText(userUsd: number): string {
 export function ShareSection(props: Props) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   function handleShare() {
     const intent = `https://x.com/intent/post?text=${encodeURIComponent(tweetText(props.userUsd))}`;
@@ -60,6 +61,25 @@ export function ShareSection(props: Props) {
     }
   }
 
+  async function handleCopy() {
+    if (copied || !cardRef.current) return;
+    try {
+      const blob = await toBlob(cardRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: "#FFFFFF",
+      });
+      if (!blob) throw new Error("blob is null");
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error("[ShareSection] copy failed:", e);
+    }
+  }
+
   return (
     <div>
       <p className="uppercase text-xs tracking-widest text-base-mute mb-3">
@@ -76,6 +96,13 @@ export function ShareSection(props: Props) {
         >
           Share on X
           <span aria-hidden>→</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
+        >
+          {copied ? "Copied!" : "Copy image"}
         </button>
         <button
           type="button"
