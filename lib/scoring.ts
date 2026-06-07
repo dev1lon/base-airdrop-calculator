@@ -28,8 +28,8 @@ export function score(stats: ActivityStats): ScoreResult {
       label: "You've bridged funds into Base",
       met: stats.hasBridged,
       detail: stats.hasBridged
-        ? "Canonical L2StandardBridge deposit detected"
-        : "No canonical bridge deposit detected on L2",
+        ? "Official Base Bridge deposit detected"
+        : "No official Base Bridge deposit detected on L2",
     },
     {
       id: "months-2",
@@ -106,21 +106,21 @@ export function score(stats: ActivityStats): ScoreResult {
       group: "bridgedValue",
       label: "You've bridged more than $10,000 of assets to Base",
       met: stats.bridgedUsd > 10_000,
-      detail: `$${fmt(stats.bridgedUsd)} bridged via canonical bridge`,
+      detail: `$${fmt(stats.bridgedUsd)} bridged via official Base Bridge`,
     },
     {
       id: "bridge-50k",
       group: "bridgedValue",
       label: "You've bridged more than $50,000 of assets to Base",
       met: stats.bridgedUsd > 50_000,
-      detail: `$${fmt(stats.bridgedUsd)} bridged via canonical bridge`,
+      detail: `$${fmt(stats.bridgedUsd)} bridged via official Base Bridge`,
     },
     {
       id: "bridge-250k",
       group: "bridgedValue",
       label: "You've bridged more than $250,000 of assets to Base",
       met: stats.bridgedUsd > 250_000,
-      detail: `$${fmt(stats.bridgedUsd)} bridged via canonical bridge`,
+      detail: `$${fmt(stats.bridgedUsd)} bridged via official Base Bridge`,
     },
     {
       id: "basename",
