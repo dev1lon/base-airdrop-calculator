@@ -32,13 +32,13 @@ function UnitToggle({
   onChange: (u: Unit) => void;
 }) {
   return (
-    <div className="flex bg-base-bg border border-base-border rounded-lg overflow-hidden">
+    <div className="flex bg-base-panel border border-base-border rounded-lg overflow-hidden divide-x divide-base-border">
       {(["M", "B"] as Unit[]).map((u) => (
         <button
           key={u}
           type="button"
           onClick={() => onChange(u)}
-          className={`px-4 py-3 font-mono text-sm transition-colors ${value === u ? "bg-base-blue text-white" : "text-base-mute hover:text-base-text"}`}
+          className={`px-4 py-3 font-mono text-sm font-semibold transition-colors ${value === u ? "bg-base-blue text-white" : "text-base-text hover:bg-base-panelStrong"}`}
         >
           {u}
         </button>
