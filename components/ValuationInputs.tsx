@@ -32,7 +32,7 @@ function UnitToggle({
   onChange: (u: Unit) => void;
 }) {
   return (
-    <div className="flex bg-base-panel border border-base-border rounded-lg overflow-hidden divide-x divide-base-border">
+    <div className="flex shrink-0 bg-base-panel border border-base-border rounded-lg overflow-hidden divide-x divide-base-border">
       {(["M", "B"] as Unit[]).map((u) => (
         <button
           key={u}
@@ -85,7 +85,7 @@ function AmountRow({
     <div>
       <label className="uppercase text-xs tracking-widest text-base-mute">{label}</label>
       <div className="mt-2 flex items-center gap-2">
-        <div className="flex-1 flex items-center bg-base-bg border border-base-border rounded-lg focus-within:border-base-blue transition-colors">
+        <div className="flex-1 min-w-0 flex items-center bg-base-bg border border-base-border rounded-lg focus-within:border-base-blue transition-colors">
           <span className="pl-4 pr-2 text-base-mute font-mono">$</span>
           <input
             type="text"
@@ -93,7 +93,7 @@ function AmountRow({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="5"
-            className={`flex-1 bg-transparent py-3 pr-4 font-mono text-lg outline-none ${bad ? "text-base-red" : "text-base-text"}`}
+            className={`flex-1 min-w-0 bg-transparent py-3 pr-4 font-mono text-lg outline-none ${bad ? "text-base-red" : "text-base-text"}`}
           />
         </div>
         <UnitToggle value={unit} onChange={setUnit} />
@@ -138,14 +138,14 @@ function SupplyRow({
     <div>
       <label className="uppercase text-xs tracking-widest text-base-mute">Total token supply</label>
       <div className="mt-2 flex items-center gap-2">
-        <div className="flex-1 flex items-center bg-base-bg border border-base-border rounded-lg focus-within:border-base-blue transition-colors">
+        <div className="flex-1 min-w-0 flex items-center bg-base-bg border border-base-border rounded-lg focus-within:border-base-blue transition-colors">
           <input
             type="text"
             inputMode="decimal"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="10"
-            className={`flex-1 bg-transparent pl-4 py-3 pr-4 font-mono text-lg outline-none ${bad ? "text-base-red" : "text-base-text"}`}
+            className={`flex-1 min-w-0 bg-transparent pl-4 py-3 pr-4 font-mono text-lg outline-none ${bad ? "text-base-red" : "text-base-text"}`}
           />
         </div>
         <UnitToggle value={unit} onChange={setUnit} />
