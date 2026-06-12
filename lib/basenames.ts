@@ -31,10 +31,10 @@ const RESOLVER_ABI = [
   },
 ] as const;
 
+const envRpc = process.env.ALCHEMY_RPC?.trim();
+
 const RPC_URLS = [
-  // Primary: dedicated Alchemy key (most reliable for contract reads under load)
-  "https://base-mainnet.g.alchemy.com/v2/BsnOewsk2kTINICMWjojp",
-  // Public fallbacks
+  ...(envRpc ? [envRpc] : []),
   "https://base-rpc.publicnode.com",
   "https://base.drpc.org",
   "https://rpc.ankr.com/base",
