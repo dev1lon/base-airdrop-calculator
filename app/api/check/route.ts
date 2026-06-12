@@ -21,7 +21,7 @@ function keyFor(input: string): string {
   return input.trim().toLowerCase();
 }
 
-function json(response: CheckResponse, status = 200) {
+function json(response: unknown, status = 200) {
   return NextResponse.json(response, {
     status,
     headers: {
@@ -81,6 +81,25 @@ function isAuthorized(request: Request): boolean {
   const secret = process.env.CHECK_API_SECRET?.trim();
   if (!secret) return true;
   return request.headers.get(SECRET_HEADER) === secret;
+}
+
+export async function GET() {
+  let proxyTarget: string | null = null;
+  let proxyConfigOk = true;
+
+  try {
+    proxyTarget = getProxyTarget();
+  } catch {
+    proxyConfigOk = false;
+  }
+
+  return json({
+    ok: true,
+    service: "base-check",
+    mode: proxyTarget ? "proxy" : "backend",
+    proxyConfigOk,
+    protected: Boolean(process.env.CHECK_API_SECRET?.trim()),
+  });
 }
 
 export async function POST(request: Request) {
