@@ -1,17 +1,20 @@
+import { supabase } from "./supabase";
+
 type Prices = { eth: number; btc: number };
-let cached: Prices = { eth: 0, btc: 0 };
-let cachedAt = 0;
-const TTL_MS = 60_000;
+
+// Per-browser-session memory cache so a user dragging sliders / re-checking
+// doesn't hit Supabase repeatedly.
+let mem: Prices = { eth: 0, btc: 0 };
+let memAt = 0;
+
+const MEM_TTL_MS = 60_000; // in-tab reuse window
+const SHARED_TTL_MS = 120_000; // how long the Supabase-cached price is "fresh"
 const FALLBACK: Prices = { eth: 3000, btc: 60000 };
 
-export async function getPrices(): Promise<Prices> {
-  if (Date.now() - cachedAt < TTL_MS && cached.eth > 0 && cached.btc > 0) {
-    return cached;
-  }
+async function fetchCoinGecko(): Promise<Prices | null> {
   try {
     const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd",
-      { next: { revalidate: 60 } }
+      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd"
     );
     const json = (await res.json()) as {
       ethereum?: { usd?: number };
@@ -20,13 +23,68 @@ export async function getPrices(): Promise<Prices> {
     const eth = json?.ethereum?.usd;
     const btc = json?.bitcoin?.usd;
     if (typeof eth === "number" && eth > 0 && typeof btc === "number" && btc > 0) {
-      cached = { eth, btc };
-      cachedAt = Date.now();
-      return cached;
+      return { eth, btc };
     }
   } catch {}
-  if (cached.eth > 0 && cached.btc > 0) return cached;
-  return FALLBACK;
+  return null;
+}
+
+// Price resolution order, designed so that under heavy traffic CoinGecko is
+// hit at most ~once per SHARED_TTL_MS across ALL visitors (not per visitor):
+//   1. in-tab memory cache (no network)
+//   2. shared Supabase `prices` row, if fresh
+//   3. refresh from CoinGecko, write back to Supabase
+//   4. stale Supabase row / hardcoded fallback if CoinGecko is down
+export async function getPrices(): Promise<Prices> {
+  if (Date.now() - memAt < MEM_TTL_MS && mem.eth > 0 && mem.btc > 0) {
+    return mem;
+  }
+
+  try {
+    const { data } = await supabase
+      .from("prices")
+      .select("eth_usd, btc_usd, updated_at")
+      .eq("id", 1)
+      .single();
+
+    if (data && data.eth_usd > 0 && data.btc_usd > 0) {
+      const age = Date.now() - new Date(data.updated_at).getTime();
+      const shared: Prices = { eth: data.eth_usd, btc: data.btc_usd };
+      if (age < SHARED_TTL_MS) {
+        mem = shared;
+        memAt = Date.now();
+        return shared;
+      }
+      // Shared row is stale — this visitor refreshes it for everyone.
+      const fresh = await fetchCoinGecko();
+      if (fresh) {
+        await supabase
+          .from("prices")
+          .update({
+            eth_usd: fresh.eth,
+            btc_usd: fresh.btc,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", 1);
+        mem = fresh;
+        memAt = Date.now();
+        return fresh;
+      }
+      // CoinGecko down — use the stale shared price rather than fallback.
+      mem = shared;
+      memAt = Date.now();
+      return shared;
+    }
+  } catch {}
+
+  // Supabase unreachable / empty — go direct to CoinGecko.
+  const fresh = await fetchCoinGecko();
+  if (fresh) {
+    mem = fresh;
+    memAt = Date.now();
+    return fresh;
+  }
+  return mem.eth > 0 ? mem : FALLBACK;
 }
 
 export async function getEthPriceUsd(): Promise<number> {
