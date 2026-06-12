@@ -31,9 +31,6 @@ export async function checkAddress(raw: string): Promise<CheckResponse> {
     return { ok: true, address, resolvedFromName, stats, score: sc };
   } catch (e) {
     console.error("[checkAddress]", e);
-    return {
-      ok: false,
-      error: "Network busy — please try again in a moment",
-    };
+    return { ok: false, error: "Internal error" };
   }
 }
