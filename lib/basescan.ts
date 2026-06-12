@@ -71,7 +71,10 @@ export async function getNormalTxs(address: string): Promise<NormalTx[]> {
   );
 }
 
-export async function getInternalTxs(address: string): Promise<NormalTx[]> {
+export async function getInternalTxs(
+  address: string,
+  sort: "asc" | "desc" = "desc"
+): Promise<NormalTx[]> {
   return call<NormalTx[]>(
     {
       module: "account",
@@ -79,7 +82,7 @@ export async function getInternalTxs(address: string): Promise<NormalTx[]> {
       address,
       startblock: "0",
       endblock: "99999999",
-      sort: "desc",
+      sort,
       page: "1",
       offset: PAGE_LIMIT,
     },

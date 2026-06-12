@@ -26,15 +26,30 @@ function weiToEth(wei: bigint): number {
 export async function analyzeAddress(address: string): Promise<ActivityStats> {
   const lower = address.toLowerCase();
 
-  const [normal, internal, tokens, balance, prices, name] = await Promise.all([
-    getNormalTxs(address),
-    getInternalTxs(address),
-    getTokenTxs(address),
-    getEthBalance(address),
-    getPrices(),
-    lookupBaseName(address),
-  ]);
+  const [normal, internalRecent, internalEarly, tokens, balance, prices, name] =
+    await Promise.all([
+      getNormalTxs(address),
+      getInternalTxs(address, "desc"),
+      getInternalTxs(address, "asc"),
+      getTokenTxs(address),
+      getEthBalance(address),
+      getPrices(),
+      lookupBaseName(address),
+    ]);
   const ethPrice = prices.eth;
+
+  // The official Base Bridge deposit is usually one of the wallet's earliest
+  // internal txs, while recent activity lives at the other end of the list.
+  // Blockscout caps each page, so we fetch both ends and dedupe to make sure
+  // an old bridge deposit on a busy wallet is not missed.
+  const seenInternal = new Set<string>();
+  const internal: typeof internalRecent = [];
+  for (const tx of [...internalRecent, ...internalEarly]) {
+    const key = `${tx.hash}:${tx.from}:${tx.to}:${tx.value}`;
+    if (seenInternal.has(key)) continue;
+    seenInternal.add(key);
+    internal.push(tx);
+  }
 
   const months = new Set<string>();
   const contracts = new Set<string>();
