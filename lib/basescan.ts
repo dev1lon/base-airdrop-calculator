@@ -7,7 +7,12 @@ type ApiResponse<T> = { status: string; message: string; result: T };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-class ApiUnavailableError extends Error {}
+class ApiUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ApiUnavailableError";
+  }
+}
 
 function isNoTransactions(json: ApiResponse<unknown>): boolean {
   return (
@@ -105,9 +110,9 @@ async function call<T>(
     }
   }
   if (critical) {
-    throw lastErr instanceof Error
-      ? lastErr
-      : new ApiUnavailableError("Blockscout unavailable");
+    const action = params.action || "unknown";
+    const reason = lastErr instanceof Error ? lastErr.message : String(lastErr);
+    throw new ApiUnavailableError(`Blockscout ${action} failed after ${MAX_ATTEMPTS} attempts: ${reason}`);
   }
   return fallback;
 }
