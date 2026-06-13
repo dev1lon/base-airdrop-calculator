@@ -19,7 +19,8 @@ export function Header() {
           className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
         >
           <span aria-hidden>🎮</span>
-          <span className="hidden sm:inline">Play&nbsp;</span>RugPullRun
+          <span className="hidden sm:inline">Play</span>
+          <span>RugPullRun</span>
         </a>
       </div>
     </header>
