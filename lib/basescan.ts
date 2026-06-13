@@ -16,11 +16,20 @@ class ApiUnavailableError extends Error {
   }
 }
 
-function isNoTransactions(json: ApiResponse<unknown>): boolean {
-  return (
-    (typeof json.result === "string" && /No transactions/i.test(json.result)) ||
-    /No transactions/i.test(json.message)
-  );
+// A successful-but-empty lookup. Blockscout/etherscan signals "this address
+// simply has no data of this kind" with status "0" and EITHER an empty array
+// result OR a "No <something> found" message — e.g. "No transactions found"
+// (txlist), "No token transfers found" (tokentx), "No internal transactions
+// found" (txlistinternal). Genuine failures (rate limit, bad address) instead
+// return a *string* result like "Max rate limit reached" / "Invalid address".
+// Matching only "No transactions" wrongly treated empty token/internal lists as
+// errors, failing the whole check for any wallet with no token transfers.
+function isEmptyResult(json: ApiResponse<unknown>): boolean {
+  if (Array.isArray(json.result) && json.result.length === 0) return true;
+  if (/^\s*No\b.*\bfound\b/i.test(json.message)) return true;
+  if (typeof json.result === "string" && /^\s*No\b.*\bfound\b/i.test(json.result))
+    return true;
+  return false;
 }
 
 function responseSummary(json: ApiResponse<unknown>): string {
@@ -72,7 +81,7 @@ async function attempt<T>(url: string, fallback: T): Promise<T> {
     const json = (await res.json()) as ApiResponse<T>;
 
     if (json.status !== "1") {
-      if (isNoTransactions(json)) return fallback;
+      if (isEmptyResult(json)) return fallback;
       throw new ApiUnavailableError(responseSummary(json));
     }
 
