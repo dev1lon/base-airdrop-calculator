@@ -11,6 +11,16 @@ export function Header() {
           className="rounded-full"
         />
         <span className="font-semibold tracking-wide text-sm sm:text-base">BASE AIRDROP CALCULATOR</span>
+
+        <a
+          href="https://rugpullrun.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
+        >
+          <span aria-hidden>🎮</span>
+          <span className="hidden sm:inline">Play&nbsp;</span>RugPullRun
+        </a>
       </div>
     </header>
   );

@@ -131,16 +131,26 @@ export default function Page() {
             token issuer. Scoring mirrors the public Arbitrum airdrop
             eligibility specification.
           </span>
-          <span className="whitespace-nowrap">
-            Created by{" "}
+          <span className="whitespace-nowrap flex items-center gap-4">
             <a
-              href="https://x.com/devilonnn"
+              href="https://rugpullrun.app"
               target="_blank"
               rel="noopener noreferrer"
               className="text-base-text hover:text-base-blue transition-colors font-mono"
             >
-              @devilonnn
+              🎮 RugPullRun
             </a>
+            <span>
+              Created by{" "}
+              <a
+                href="https://x.com/devilonnn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-base-text hover:text-base-blue transition-colors font-mono"
+              >
+                @devilonnn
+              </a>
+            </span>
           </span>
         </div>
       </footer>
