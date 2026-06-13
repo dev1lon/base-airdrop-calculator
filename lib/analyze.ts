@@ -1,5 +1,6 @@
 import { getEthBalance, getInternalTxs, getNormalTxs, getTokenTxs } from "./basescan";
 import { lookupBaseName } from "./basenames";
+import { getCanonicalBridge } from "./bridge";
 import { getPrices, tokenUsdValue } from "./pricing";
 import type { ActivityStats } from "./types";
 
@@ -26,16 +27,25 @@ function weiToEth(wei: bigint): number {
 export async function analyzeAddress(address: string): Promise<ActivityStats> {
   const lower = address.toLowerCase();
 
-  const [normal, internalRecent, internalEarly, tokens, balance, prices, name] =
-    await Promise.all([
-      getNormalTxs(address),
-      getInternalTxs(address, "desc"),
-      getInternalTxs(address, "asc"),
-      getTokenTxs(address),
-      getEthBalance(address),
-      getPrices(),
-      lookupBaseName(address),
-    ]);
+  const [
+    normal,
+    internalRecent,
+    internalEarly,
+    tokens,
+    balance,
+    prices,
+    name,
+    canonicalBridge,
+  ] = await Promise.all([
+    getNormalTxs(address),
+    getInternalTxs(address, "desc"),
+    getInternalTxs(address, "asc"),
+    getTokenTxs(address),
+    getEthBalance(address),
+    getPrices(),
+    lookupBaseName(address),
+    getCanonicalBridge(address),
+  ]);
   const ethPrice = prices.eth;
 
   // The official Base Bridge deposit is usually one of the wallet's earliest
@@ -84,16 +94,12 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
     }
   }
 
+  // Internal txs are only used for the activity timestamp window here; ETH
+  // bridge deposits are detected authoritatively via Ankr below (Blockscout
+  // misses the nested relayMessage->finalizeBridgeETH credit).
   for (const tx of internal) {
     const ts = Number(tx.timeStamp);
     if (ts) recordTs(ts);
-    if (
-      tx.from?.toLowerCase() === L2_STANDARD_BRIDGE &&
-      tx.to?.toLowerCase() === lower
-    ) {
-      hasBridged = true;
-      bridgedUsd += weiToEth(safeBigInt(tx.value)) * ethPrice;
-    }
   }
 
   for (const t of tokens) {
@@ -115,6 +121,12 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
       hasBridged = true;
       bridgedUsd += tokenUsdValue(t.contractAddress, amount, decimals, prices);
     }
+  }
+
+  // Authoritative canonical ETH bridge signal (full history via Ankr).
+  if (canonicalBridge?.hasBridged) {
+    hasBridged = true;
+    bridgedUsd += weiToEth(canonicalBridge.ethWei) * ethPrice;
   }
 
   const allInside48h = tsCount > 1 && maxTs - minTs <= FORTY_EIGHT_HOURS_S;
