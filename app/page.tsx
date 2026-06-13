@@ -106,6 +106,7 @@ export default function Page() {
                 scaledTokens={scaledTokens}
                 userUsd={userUsd}
                 finalPoints={score.finalPoints}
+                maxPoints={score.maxPoints}
                 address={address}
                 resolvedFromName={resolvedFromName}
                 baseName={stats?.baseName ?? null}

@@ -89,7 +89,7 @@ export function EligibilityPanel({ address, resolvedFromName, score, scaledToken
           <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-base-mute">
             <span className="inline-flex items-center gap-1.5 bg-base-panel border border-base-border rounded-full px-3 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-base-green" />
-              <span className="font-mono">Score {score.finalPoints} / 15</span>
+              <span className="font-mono">Score {score.finalPoints} / {score.maxPoints}</span>
             </span>
             {addrLabel && <span className="font-mono">{addrLabel}</span>}
           </div>

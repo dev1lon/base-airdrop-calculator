@@ -6,6 +6,7 @@ type Props = {
   scaledTokens: number;
   userUsd: number;
   finalPoints: number;
+  maxPoints: number;
   address: string;
   resolvedFromName: string | null;
   baseName: string | null;
@@ -26,7 +27,7 @@ function shortAddr(a: string): string {
 }
 
 export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
-  { scaledTokens, userUsd, finalPoints, address, resolvedFromName, baseName },
+  { scaledTokens, userUsd, finalPoints, maxPoints, address, resolvedFromName, baseName },
   ref
 ) {
   const ident = baseName ?? resolvedFromName ?? shortAddr(address);
@@ -77,7 +78,7 @@ export const ShareCard = forwardRef<HTMLDivElement, Props>(function ShareCard(
             </span>
           </span>
           <span className="inline-flex items-center bg-base-panel border border-base-border rounded-full px-2.5 sm:px-3 py-0.5 sm:py-1 font-mono text-[10px] sm:text-sm text-base-mute">
-            Score {finalPoints} / 15
+            Score {finalPoints} / {maxPoints}
           </span>
         </div>
         <div className="mt-1.5 sm:mt-2 text-center text-[9px] sm:text-xs text-base-mute/80">

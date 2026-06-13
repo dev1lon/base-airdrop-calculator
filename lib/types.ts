@@ -3,7 +3,14 @@ export type Criterion = {
   label: string;
   met: boolean;
   detail: string;
-  group: "bridged" | "time" | "frequency" | "value" | "bridgedValue" | "basename";
+  group:
+    | "bridged"
+    | "time"
+    | "frequency"
+    | "value"
+    | "bridgedValue"
+    | "basename"
+    | "nft";
 };
 
 export type ActivityStats = {
@@ -16,6 +23,8 @@ export type ActivityStats = {
   hasBridged: boolean;
   hasBaseName: boolean;
   baseName: string | null;
+  hasBetaAccessNft: boolean;
+  hasBaseBuilderNft: boolean;
   ethBalance: number;
   allInside48h: boolean;
   ethPriceUsd: number;
@@ -26,6 +35,7 @@ export type ScoreResult = {
   rawPoints: number;
   deductions: { label: string; applied: boolean }[];
   finalPoints: number;
+  maxPoints: number;
   baseTokens: number;
   eligible: boolean;
 };

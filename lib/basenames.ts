@@ -50,6 +50,9 @@ const client = createPublicClient({
   ),
 });
 
+// Shared so other on-chain reads (e.g. NFT ownership) reuse one transport.
+export { client as baseClient };
+
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     p,

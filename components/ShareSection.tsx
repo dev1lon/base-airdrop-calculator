@@ -8,6 +8,7 @@ type Props = {
   scaledTokens: number;
   userUsd: number;
   finalPoints: number;
+  maxPoints: number;
   address: string;
   resolvedFromName: string | null;
   baseName: string | null;

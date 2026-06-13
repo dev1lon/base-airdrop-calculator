@@ -131,9 +131,28 @@ export function score(stats: ActivityStats): ScoreResult {
         ? `Primary name: ${stats.baseName}`
         : "No Basename set as primary",
     },
+    {
+      id: "nft-beta-access",
+      group: "nft",
+      label: "You hold the Base Beta Access NFT",
+      met: stats.hasBetaAccessNft,
+      detail: stats.hasBetaAccessNft
+        ? "Beta Access NFT held — early Base user"
+        : "No Beta Access NFT held",
+    },
+    {
+      id: "nft-base-builder",
+      group: "nft",
+      label: "You hold the Base Builder NFT",
+      met: stats.hasBaseBuilderNft,
+      detail: stats.hasBaseBuilderNft
+        ? "Base Builder NFT held — early Base user"
+        : "No Base Builder NFT held",
+    },
   ];
 
-  const rawPoints = Math.min(15, criteria.filter((c) => c.met).length);
+  const maxPoints = criteria.length;
+  const rawPoints = Math.min(maxPoints, criteria.filter((c) => c.met).length);
 
   const deductions = [
     {
@@ -157,6 +176,7 @@ export function score(stats: ActivityStats): ScoreResult {
     rawPoints,
     deductions,
     finalPoints,
+    maxPoints,
     baseTokens,
     eligible: finalPoints >= 3,
   };

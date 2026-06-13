@@ -12,6 +12,7 @@ const GROUP_ORDER: Criterion["group"][] = [
   "value",
   "bridgedValue",
   "basename",
+  "nft",
 ];
 
 const GROUP_LABELS: Record<Criterion["group"], string> = {
@@ -21,6 +22,7 @@ const GROUP_LABELS: Record<Criterion["group"], string> = {
   value: "TRANSACTION VALUE",
   bridgedValue: "ASSETS BRIDGED TO BASE",
   basename: "OWNS A BASE NAME",
+  nft: "EARLY-USER NFTS",
 };
 
 function GroupRow({
@@ -107,6 +109,7 @@ export function CriteriaList({ score, loading }: Props) {
     value: [],
     bridgedValue: [],
     basename: [],
+    nft: [],
   };
   for (const c of score.criteria) byGroup[c.group].push(c);
 
@@ -136,7 +139,7 @@ export function CriteriaList({ score, loading }: Props) {
         the Arbitrum airdrop exactly, applied to Base mainnet activity.
         <br />
         <span className="font-semibold text-base-text">
-          Score: {score.finalPoints} / 15 points.
+          Score: {score.finalPoints} / {score.maxPoints} points.
         </span>
       </p>
     </div>

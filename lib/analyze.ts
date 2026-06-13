@@ -1,6 +1,7 @@
 import { getEthBalance, getNormalTxs, getTokenTxs } from "./basescan";
 import { lookupBaseName } from "./basenames";
 import { getCanonicalBridge } from "./bridge";
+import { getEarlyUserNfts } from "./nft";
 import { getPrices, tokenUsdValue } from "./pricing";
 import type { ActivityStats } from "./types";
 
@@ -27,7 +28,7 @@ function weiToEth(wei: bigint): number {
 export async function analyzeAddress(address: string): Promise<ActivityStats> {
   const lower = address.toLowerCase();
 
-  const [normal, tokens, balance, prices, name, canonicalBridge] =
+  const [normal, tokens, balance, prices, name, canonicalBridge, nfts] =
     await Promise.all([
       getNormalTxs(address),
       getTokenTxs(address),
@@ -35,6 +36,7 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
       getPrices(),
       lookupBaseName(address),
       getCanonicalBridge(address),
+      getEarlyUserNfts(address),
     ]);
   const ethPrice = prices.eth;
 
@@ -110,6 +112,8 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
     hasBridged,
     hasBaseName: Boolean(name),
     baseName: name,
+    hasBetaAccessNft: nfts.betaAccess,
+    hasBaseBuilderNft: nfts.baseBuilder,
     ethBalance: balance,
     allInside48h,
     ethPriceUsd: ethPrice,

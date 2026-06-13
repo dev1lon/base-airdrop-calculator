@@ -228,7 +228,7 @@ export default async function OgImage() {
                 fontWeight: 700,
               }}
             >
-              5 / 15
+              5 / 17
             </span>
           </div>
         </div>
