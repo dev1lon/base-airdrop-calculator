@@ -1,6 +1,12 @@
 const BASE_URL = "https://base.blockscout.com/api";
 const PAGE_LIMIT = "1000";
-const REQUEST_TIMEOUT_MS = 9_000;
+// tokentx rows carry the parent tx's full `input` calldata (unused here but up
+// to tens of KB each — a busy wallet's 1000-row page can hit 30+ MB and >10 s,
+// which the client browser must download and parse). A smaller page keeps the
+// payload light and fast; tx/contract counts come from txlist, so tokens only
+// need a recent sample for stablecoin value and ERC-20 bridge detection.
+const TOKEN_PAGE_LIMIT = "200";
+const REQUEST_TIMEOUT_MS = 15_000;
 const MAX_ATTEMPTS = 4;
 
 type ApiResponse<T> = { status: string; message: string; result: T };
@@ -183,7 +189,7 @@ export async function getTokenTxs(address: string): Promise<TokenTx[]> {
       endblock: "99999999",
       sort: "desc",
       page: "1",
-      offset: PAGE_LIMIT,
+      offset: TOKEN_PAGE_LIMIT,
     },
     [],
     true
