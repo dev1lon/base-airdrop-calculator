@@ -1,4 +1,4 @@
-import { getEthBalance, getInternalTxs, getNormalTxs, getTokenTxs } from "./basescan";
+import { getEthBalance, getNormalTxs, getTokenTxs } from "./basescan";
 import { lookupBaseName } from "./basenames";
 import { getCanonicalBridge } from "./bridge";
 import { getPrices, tokenUsdValue } from "./pricing";
@@ -27,39 +27,16 @@ function weiToEth(wei: bigint): number {
 export async function analyzeAddress(address: string): Promise<ActivityStats> {
   const lower = address.toLowerCase();
 
-  const [
-    normal,
-    internalRecent,
-    internalEarly,
-    tokens,
-    balance,
-    prices,
-    name,
-    canonicalBridge,
-  ] = await Promise.all([
-    getNormalTxs(address),
-    getInternalTxs(address, "desc"),
-    getInternalTxs(address, "asc"),
-    getTokenTxs(address),
-    getEthBalance(address),
-    getPrices(),
-    lookupBaseName(address),
-    getCanonicalBridge(address),
-  ]);
+  const [normal, tokens, balance, prices, name, canonicalBridge] =
+    await Promise.all([
+      getNormalTxs(address),
+      getTokenTxs(address),
+      getEthBalance(address),
+      getPrices(),
+      lookupBaseName(address),
+      getCanonicalBridge(address),
+    ]);
   const ethPrice = prices.eth;
-
-  // The official Base Bridge deposit is usually one of the wallet's earliest
-  // internal txs, while recent activity lives at the other end of the list.
-  // Blockscout caps each page, so we fetch both ends and dedupe to make sure
-  // an old bridge deposit on a busy wallet is not missed.
-  const seenInternal = new Set<string>();
-  const internal: typeof internalRecent = [];
-  for (const tx of [...internalRecent, ...internalEarly]) {
-    const key = `${tx.hash}:${tx.from}:${tx.to}:${tx.value}`;
-    if (seenInternal.has(key)) continue;
-    seenInternal.add(key);
-    internal.push(tx);
-  }
 
   const months = new Set<string>();
   const contracts = new Set<string>();
@@ -92,14 +69,6 @@ export async function analyzeAddress(address: string): Promise<ActivityStats> {
       }
       aggValueUsd += weiToEth(safeBigInt(tx.value)) * ethPrice;
     }
-  }
-
-  // Internal txs are only used for the activity timestamp window here; ETH
-  // bridge deposits are detected authoritatively via Ankr below (Blockscout
-  // misses the nested relayMessage->finalizeBridgeETH credit).
-  for (const tx of internal) {
-    const ts = Number(tx.timeStamp);
-    if (ts) recordTs(ts);
   }
 
   for (const t of tokens) {

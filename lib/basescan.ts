@@ -8,9 +8,11 @@ type ApiResponse<T> = { status: string; message: string; result: T };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 class ApiUnavailableError extends Error {
-  constructor(message: string) {
+  status?: number;
+  constructor(message: string, status?: number) {
     super(message);
     this.name = "ApiUnavailableError";
+    this.status = status;
   }
 }
 
@@ -66,7 +68,7 @@ async function attempt<T>(url: string, fallback: T): Promise<T> {
   const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
   try {
     const res = await fetch(url, { cache: "no-store", signal: ctrl.signal });
-    if (!res.ok) throw new ApiUnavailableError(`HTTP ${res.status}`);
+    if (!res.ok) throw new ApiUnavailableError(`HTTP ${res.status}`, res.status);
     const json = (await res.json()) as ApiResponse<T>;
 
     if (json.status !== "1") {
@@ -106,6 +108,9 @@ async function call<T>(
       return await attempt<T>(target, fallback);
     } catch (e) {
       lastErr = e;
+      // 429 = IP rate-limited; the window won't reset within a retry backoff,
+      // and retrying only burns more of the exhausted quota. Fail fast.
+      if (e instanceof ApiUnavailableError && e.status === 429) break;
       if (i < MAX_ATTEMPTS - 1) await sleep(300 * (i + 1) + Math.floor(Math.random() * 200));
     }
   }
