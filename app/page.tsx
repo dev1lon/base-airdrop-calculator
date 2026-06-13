@@ -7,6 +7,7 @@ import { EligibilityPanel } from "@/components/EligibilityPanel";
 import { CriteriaList } from "@/components/CriteriaList";
 import { ShareSection } from "@/components/ShareSection";
 import { ValuationInputs } from "@/components/ValuationInputs";
+import { checkAddress } from "@/lib/check";
 import {
   ARB_AIRDROP_PCT,
   DEFAULT_AIRDROP_PCT,
@@ -14,7 +15,7 @@ import {
   DEFAULT_SUPPLY,
 } from "@/lib/scoring";
 import { logCheck } from "@/lib/supabase";
-import type { ActivityStats, CheckResponse, ScoreResult } from "@/lib/types";
+import type { ActivityStats, ScoreResult } from "@/lib/types";
 
 export default function Page() {
   const [address, setAddress] = useState<string | null>(null);
@@ -37,12 +38,7 @@ export default function Page() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/check/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: input }),
-      });
-      const res = (await response.json()) as CheckResponse;
+      const res = await checkAddress(input);
       if (!res.ok) {
         setError(res.error);
       } else {
