@@ -54,3 +54,21 @@ input[type="range"]::-moz-range-thumb {
   background: #0052FF;
   color: #FFFFFF;
 }
+
+/* Tournament banner blink — opacity-only so it composites on the GPU and stays
+   cheap on low-end Android (no box-shadow/filter/background animation). The
+   flashing layer sits BEHIND the text, so the copy never flickers. */
+@keyframes tournamentFlash {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.5; }
+}
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+.tournament-flash { animation: tournamentFlash 1.2s ease-in-out infinite; }
+.live-blink { animation: liveBlink 1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .tournament-flash { animation: none; opacity: 0; }
+  .live-blink { animation: none; opacity: 1; }
+}
