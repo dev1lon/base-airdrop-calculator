@@ -8,6 +8,28 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: false },
 });
 
+// A stable per-browser id (random UUID kept in localStorage). It links every
+// wallet a person checks from the same device, so we can count how many wallets
+// one person looked up. Survives across sessions; resets only if the user
+// clears storage or switches browser/device.
+const CLIENT_ID_KEY = "bac_client_id";
+
+function getClientId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    let id = localStorage.getItem(CLIENT_ID_KEY);
+    if (!id) {
+      id =
+        globalThis.crypto?.randomUUID?.() ??
+        `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(CLIENT_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return null;
+  }
+}
+
 export async function logCheck(
   wallet: string,
   score: number,
@@ -21,6 +43,7 @@ export async function logCheck(
         score,
         coins_value: Math.round(coinsValue),
         usd_value: Math.round(usdValue),
+        client_id: getClientId(),
       },
     ]);
     if (error) {
