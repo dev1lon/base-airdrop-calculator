@@ -27,7 +27,7 @@ export function ConnectWallet() {
         type="button"
         onClick={() => activeWallet && disconnect(activeWallet)}
         title="Disconnect"
-        className="inline-flex items-center gap-1.5 rounded-full border border-base-border bg-base-panel hover:bg-base-panelStrong px-3 py-1.5 text-xs sm:text-sm font-medium font-mono text-base-text transition-colors"
+        className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-panel hover:bg-base-panelStrong px-3 py-1.5 text-xs sm:text-sm font-medium font-mono text-base-text transition-colors"
       >
         <span className="w-1.5 h-1.5 rounded-full bg-base-green" />
         {shortAddr(account.address)}
@@ -42,7 +42,7 @@ export function ConnectWallet() {
         connect({ client: thirdwebClient, wallets, chain: cardChain })
       }
       disabled={isConnecting}
-      className="inline-flex items-center rounded-full bg-base-blue hover:bg-base-blueHover disabled:opacity-60 px-3 py-1.5 text-xs sm:text-sm font-semibold text-white transition-colors"
+      className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-full bg-base-blue hover:bg-base-blueHover disabled:opacity-60 px-3 py-1.5 text-xs sm:text-sm font-semibold text-white transition-colors"
     >
       {isConnecting ? "Connecting…" : "Connect Wallet"}
     </button>

@@ -14,13 +14,13 @@ export function Header() {
         />
         <span className="font-semibold tracking-wide text-sm sm:text-base">BASE AIRDROP CALCULATOR</span>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto w-full sm:w-auto flex items-center gap-2">
           <ConnectWallet />
           <a
             href="https://rugpullrun.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
           >
             <span aria-hidden>🎮</span>
             <span className="hidden sm:inline">Play</span>
