@@ -34,6 +34,24 @@ function fmtUsd(n: number): string {
   return `$${n.toFixed(2)}`;
 }
 
+// thirdweb/wallet errors are often plain objects, not Error instances, so
+// String(e) yields "[object Object]". Dig out a human-readable message.
+function errorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (e && typeof e === "object") {
+    const o = e as Record<string, unknown>;
+    const nested = o.error as { message?: string } | undefined;
+    return (
+      (o.shortMessage as string) ||
+      (o.message as string) ||
+      (o.reason as string) ||
+      nested?.message ||
+      JSON.stringify(o).slice(0, 160)
+    );
+  }
+  return String(e);
+}
+
 function tweetText(userUsd: number): string {
   const usd = fmtUsd(userUsd);
   const url =
@@ -176,7 +194,7 @@ export function ShareSection(props: Props) {
         `Minted ${qty} card${qty === 1 ? "" : "s"}! tx ${result.transactionHash.slice(0, 10)}…`
       );
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = errorMessage(e);
       const cancelled = /reject|denied|user cancel|closed modal/i.test(msg);
       setMintMsg(cancelled ? "Cancelled." : `Failed: ${msg.slice(0, 160)}`);
       if (!cancelled) console.error("[ShareSection] mint failed:", e);
@@ -202,7 +220,7 @@ export function ShareSection(props: Props) {
             type="button"
             onClick={handleMint}
             disabled={minting}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center bg-base-blue hover:bg-base-blueHover disabled:opacity-60 text-white text-sm font-semibold rounded-full px-6 py-2.5 transition-colors"
+            className="flex-1 sm:flex-initial sm:min-w-[6.5rem] inline-flex items-center justify-center bg-base-blue hover:bg-base-blueHover disabled:opacity-60 text-white text-sm font-semibold rounded-full px-6 py-2.5 transition-colors"
           >
             {minting ? "Minting…" : "Mint"}
           </button>
@@ -239,7 +257,7 @@ export function ShareSection(props: Props) {
           <button
             type="button"
             onClick={handleCopy}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
+            className="flex-1 sm:flex-initial sm:min-w-[8rem] inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
           >
             {copied ? "Copied!" : "Copy image"}
           </button>
