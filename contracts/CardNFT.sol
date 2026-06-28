@@ -172,6 +172,28 @@ contract CardNFT is IERC721Metadata {
         emit CardMinted(msg.sender, id, uri);
     }
 
+    // Mint several copies of the same card in ONE transaction (one wallet
+    // confirmation). Pays mintPrice * quantity. Capped to keep gas bounded.
+    function mintBatch(string calldata uri, uint256 quantity)
+        external
+        payable
+        returns (uint256 firstId)
+    {
+        require(quantity > 0 && quantity <= 20, "Bad quantity");
+        require(msg.value >= mintPrice * quantity, "Insufficient payment");
+        firstId = nextTokenId;
+        for (uint256 i = 0; i < quantity; i++) {
+            uint256 id = nextTokenId++;
+            _tokenURIs[id] = uri;
+            _ownerOf[id] = msg.sender;
+            emit Transfer(address(0), msg.sender, id);
+            emit CardMinted(msg.sender, id, uri);
+        }
+        unchecked {
+            _balanceOf[msg.sender] += quantity;
+        }
+    }
+
     // ─── Admin ─────────────────────────────────────────────────────────────
     function setMintPrice(uint256 _mintPrice) external onlyOwner {
         mintPrice = _mintPrice;

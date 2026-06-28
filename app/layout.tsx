@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="page-bg" />
-        {children}
+        <Providers>{children}</Providers>
         <Analytics />
         {/* Cloudflare Web Analytics — independent of Vercel Analytics */}
         <Script

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useActiveAccount } from "thirdweb/react";
 import { Header } from "@/components/Header";
 import { AddressInput } from "@/components/AddressInput";
 import { EligibilityPanel } from "@/components/EligibilityPanel";
@@ -28,6 +29,8 @@ export default function Page() {
   const [fdv, setFdv] = useState<number>(DEFAULT_FDV);
   const [airdropPct, setAirdropPct] = useState<number>(DEFAULT_AIRDROP_PCT);
   const [totalSupply, setTotalSupply] = useState<number>(DEFAULT_SUPPLY);
+
+  const account = useActiveAccount();
 
   const baseTokens = score?.baseTokens ?? 0;
   const safeSupply = totalSupply > 0 ? totalSupply : 1;
@@ -70,7 +73,11 @@ export default function Page() {
       <Header />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
-        <AddressInput onSubmit={handleCheck} loading={loading} />
+        <AddressInput
+          onSubmit={handleCheck}
+          loading={loading}
+          value={account?.address}
+        />
         {error && <p className="mt-3 text-sm text-base-red font-mono">{error}</p>}
       </div>
 

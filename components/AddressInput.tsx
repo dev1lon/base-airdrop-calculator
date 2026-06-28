@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   onSubmit: (address: string) => void;
   loading: boolean;
+  value?: string;
 };
 
-export function AddressInput({ onSubmit, loading }: Props) {
-  const [value, setValue] = useState("");
+export function AddressInput({ onSubmit, loading, value: external }: Props) {
+  const [value, setValue] = useState(external ?? "");
+  // Keep the field in sync when a wallet connects (parent passes its address).
+  useEffect(() => {
+    if (external) setValue(external);
+  }, [external]);
   return (
     <form
       onSubmit={(e) => {
