@@ -64,22 +64,57 @@ export function ShareSection(props: Props) {
     window.open(intent, "_blank", "noopener,noreferrer");
   }
 
+  async function renderBlob(): Promise<Blob> {
+    const blob = await toBlob(cardRef.current!, {
+      cacheBust: true,
+      pixelRatio: 2,
+      backgroundColor: "#FFFFFF",
+    });
+    if (!blob) throw new Error("Could not render card");
+    return blob;
+  }
+
+  function flashCopied() {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   async function handleCopy() {
     if (copied || !cardRef.current) return;
+    // Desktop path: copy the PNG to the clipboard. Safari/mobile lose the user
+    // gesture across the async render, so the ClipboardItem is given a Promise
+    // (created synchronously) which preserves activation where supported.
     try {
-      const blob = await toBlob(cardRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: "#FFFFFF",
-      });
-      if (!blob) throw new Error("blob is null");
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
-      ]);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.error("[ShareSection] copy failed:", e);
+      if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": renderBlob() }),
+        ]);
+        flashCopied();
+        return;
+      }
+      throw new Error("clipboard unsupported");
+    } catch {
+      // Mobile / in-app browsers (Base app) can't copy images — fall back to
+      // the native share sheet (save / send / copy), else a download.
+      try {
+        const blob = await renderBlob();
+        const file = new File([blob], "base-airdrop-card.png", {
+          type: "image/png",
+        });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file] });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "base-airdrop-card.png";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        flashCopied();
+      } catch (e) {
+        console.error("[ShareSection] copy failed:", e);
+      }
     }
   }
 
@@ -95,14 +130,11 @@ export function ShareSection(props: Props) {
       }
 
       // 1. Snapshot the card to PNG.
-      const blob = await toBlob(cardRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: "#FFFFFF",
-      });
-      if (!blob) throw new Error("Could not render card");
+      setMintMsg("Preparing image…");
+      const blob = await renderBlob();
 
       // 2. Upload image, then metadata, to IPFS via thirdweb storage.
+      setMintMsg("Uploading to IPFS…");
       const imageUri = await upload({
         client: thirdwebClient,
         files: [new File([blob], "base-airdrop-card.png", { type: "image/png" })],
@@ -129,6 +161,7 @@ export function ShareSection(props: Props) {
       });
 
       // 3. Mint `qty` copies in one transaction.
+      setMintMsg("Confirm in your wallet…");
       const tx = prepareContractCall({
         contract: cardContract,
         method:
