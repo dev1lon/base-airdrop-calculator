@@ -193,24 +193,24 @@ export function ShareSection(props: Props) {
           </div>
         </div>
 
-        {/* Share — center */}
-        <button
-          type="button"
-          onClick={handleShare}
-          className="inline-flex items-center justify-center gap-2 bg-base-text hover:bg-black text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
-        >
-          Share on X
-          <span aria-hidden>→</span>
-        </button>
-
-        {/* Copy — right */}
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
-        >
-          {copied ? "Copied!" : "Copy image"}
-        </button>
+        {/* Share + Copy — paired equal row on mobile, spread out on desktop */}
+        <div className="flex gap-3 sm:contents">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-base-text hover:bg-black text-white text-sm font-semibold rounded-full px-5 py-2.5 transition-colors"
+          >
+            Share on X
+            <span aria-hidden>→</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-base-panel hover:bg-base-panelStrong text-base-text text-sm font-semibold rounded-full px-5 py-2.5 border border-base-border transition-colors"
+          >
+            {copied ? "Copied!" : "Copy image"}
+          </button>
+        </div>
       </div>
 
       <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-1 text-xs">
