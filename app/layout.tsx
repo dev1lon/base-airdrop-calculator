@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     description: "Estimate a hypothetical $BASE airdrop using Arbitrum's legendary airdrop scoring.",
     images: ["/og-image.png"],
   },
+  verification: {
+    google: "1A7IE6wJ7XGKFcm9nUbssei2mzgfRauZyqeVddgvaUE",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
