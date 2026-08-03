@@ -17,9 +17,11 @@ export const cardContract = getContract({
   address: "0x30a2e809a4d5fC320cCfda39ec87e80b53d7975B",
 });
 
-// 0.003 ETH per card.
-export const MINT_PRICE_WEI = 3_000_000_000_000_000n;
-export const MINT_PRICE_ETH = 0.003;
+// 0.0016 ETH per card (~$3 at ~$1,840/ETH). Must stay in sync with the
+// contract's on-chain `mintPrice` — a lower value here reverts as
+// "Insufficient payment"; change both together via setMintPrice().
+export const MINT_PRICE_WEI = 1_600_000_000_000_000n;
+export const MINT_PRICE_ETH = 0.0016;
 
 // Connect options: Coinbase (Base app / Smart Wallet), MetaMask/injected, and
 // WalletConnect for any mobile wallet. Inside the Base app the injected

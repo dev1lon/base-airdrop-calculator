@@ -203,7 +203,7 @@ export function ShareSection(props: Props) {
     }
   }
 
-  const totalEth = (MINT_PRICE_ETH * qty).toFixed(3);
+  const totalEth = (MINT_PRICE_ETH * qty).toFixed(4);
 
   return (
     <div>
