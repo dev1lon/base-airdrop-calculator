@@ -9,6 +9,7 @@ import { CriteriaList } from "@/components/CriteriaList";
 import { ShareSection } from "@/components/ShareSection";
 import { ValuationInputs } from "@/components/ValuationInputs";
 import { checkAddress } from "@/lib/check";
+import { POLYMARKET_PERPS_URL, RUGPULLRUN_URL } from "@/lib/links";
 import {
   ARB_AIRDROP_PCT,
   DEFAULT_AIRDROP_PCT,
@@ -139,12 +140,20 @@ export default function Page() {
             token issuer. Scoring mirrors the public Arbitrum airdrop
             eligibility specification.
           </span>
-          <span className="whitespace-nowrap flex items-center gap-4">
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <a
-              href="https://rugpullrun.app"
+              href={POLYMARKET_PERPS_URL}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
+            >
+              📈 Polymarket
+            </a>
+            <a
+              href={RUGPULLRUN_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-base-text hover:text-base-blue transition-colors font-mono"
+              className="whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
             >
               🎮 RugPullRun
             </a>

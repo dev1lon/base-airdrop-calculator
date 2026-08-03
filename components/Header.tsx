@@ -1,4 +1,5 @@
 import { ConnectWallet } from "./ConnectWallet";
+import { POLYMARKET_PERPS_URL, RUGPULLRUN_URL } from "@/lib/links";
 
 export function Header() {
   return (
@@ -14,10 +15,24 @@ export function Header() {
         />
         <span className="font-semibold tracking-wide text-sm sm:text-base">BASE AIRDROP CALCULATOR</span>
 
-        <div className="ml-auto w-full sm:w-auto flex items-center gap-2">
-          <ConnectWallet />
+        {/* Mobile: wallet takes its own row, the two partner pills split the
+            next one evenly. Desktop: all three sit inline. */}
+        <div className="ml-auto w-full sm:w-auto flex flex-wrap items-center gap-2">
+          <div className="w-full sm:w-auto flex">
+            <ConnectWallet />
+          </div>
           <a
-            href="https://rugpullrun.app"
+            href={POLYMARKET_PERPS_URL}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
+          >
+            <span aria-hidden>📈</span>
+            <span className="hidden sm:inline">Trade</span>
+            <span>Polymarket</span>
+          </a>
+          <a
+            href={RUGPULLRUN_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
