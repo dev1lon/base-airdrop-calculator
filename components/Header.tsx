@@ -1,5 +1,6 @@
 import { ConnectWallet } from "./ConnectWallet";
-import { POLYMARKET_PERPS_URL, RUGPULLRUN_URL } from "@/lib/links";
+import { POLYMARKET_URL, RUGPULLRUN_URL } from "@/lib/links";
+import { PolymarketIcon } from "./PolymarketIcon";
 
 export function Header() {
   return (
@@ -22,12 +23,12 @@ export function Header() {
             <ConnectWallet />
           </div>
           <a
-            href={POLYMARKET_PERPS_URL}
+            href={POLYMARKET_URL}
             target="_blank"
             rel="noopener noreferrer sponsored"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
           >
-            <span aria-hidden>📈</span>
+            <PolymarketIcon className="h-3.5 w-auto shrink-0" />
             <span className="hidden sm:inline">Trade</span>
             <span>Polymarket</span>
           </a>

@@ -9,7 +9,8 @@ import { CriteriaList } from "@/components/CriteriaList";
 import { ShareSection } from "@/components/ShareSection";
 import { ValuationInputs } from "@/components/ValuationInputs";
 import { checkAddress } from "@/lib/check";
-import { POLYMARKET_PERPS_URL, RUGPULLRUN_URL } from "@/lib/links";
+import { POLYMARKET_URL, RUGPULLRUN_URL } from "@/lib/links";
+import { PolymarketIcon } from "@/components/PolymarketIcon";
 import {
   ARB_AIRDROP_PCT,
   DEFAULT_AIRDROP_PCT,
@@ -142,12 +143,13 @@ export default function Page() {
           </span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <a
-              href={POLYMARKET_PERPS_URL}
+              href={POLYMARKET_URL}
               target="_blank"
               rel="noopener noreferrer sponsored"
-              className="whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
             >
-              📈 Polymarket
+              <PolymarketIcon className="h-3.5 w-auto shrink-0" />
+              Polymarket
             </a>
             <a
               href={RUGPULLRUN_URL}

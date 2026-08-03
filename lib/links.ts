@@ -3,5 +3,5 @@
 
 export const RUGPULLRUN_URL = "https://rugpullrun.app";
 
-// Referral link — the ?c= code is what credits the referral, keep it on.
-export const POLYMARKET_PERPS_URL = "https://polymarket.com/perps?c=01o3fzuh";
+// Referral link — the ?via= code is what credits the referral, keep it on.
+export const POLYMARKET_URL = "https://polymarket.com?via=devilon";
