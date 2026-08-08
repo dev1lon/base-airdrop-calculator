@@ -148,8 +148,8 @@ export default function Page() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
             >
-              <SnakeGameIcon className="h-4 w-4" />
-              Play Snake Game
+              <SnakeGameIcon className="h-5 w-5" />
+              Snake Game
             </a>
             <a
               href={RUGPULLRUN_URL}
@@ -157,7 +157,7 @@ export default function Page() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
             >
-              <RugPullRunIcon className="h-4 w-4" />
+              <RugPullRunIcon className="h-5 w-5" />
               RugPullRun
             </a>
             <span>

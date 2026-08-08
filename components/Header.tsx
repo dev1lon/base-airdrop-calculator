@@ -28,8 +28,10 @@ export function Header() {
             rel="noopener noreferrer"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
           >
-            <SnakeGameIcon className="h-4 w-4" />
-            <span className="whitespace-nowrap">Play Snake Game</span>
+            <SnakeGameIcon className="h-5 w-5" />
+            <span className="whitespace-nowrap">
+              <span className="hidden sm:inline">Play </span>Snake Game
+            </span>
           </a>
           <a
             href={RUGPULLRUN_URL}
@@ -37,7 +39,7 @@ export function Header() {
             rel="noopener noreferrer"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
           >
-            <RugPullRunIcon className="h-4 w-4" />
+            <RugPullRunIcon className="h-5 w-5" />
             <span className="whitespace-nowrap">
               <span className="hidden sm:inline">Play </span>RugPullRun
             </span>
