@@ -9,8 +9,8 @@ import { CriteriaList } from "@/components/CriteriaList";
 import { ShareSection } from "@/components/ShareSection";
 import { ValuationInputs } from "@/components/ValuationInputs";
 import { checkAddress } from "@/lib/check";
-import { POLYMARKET_URL, RUGPULLRUN_URL } from "@/lib/links";
-import { PolymarketIcon } from "@/components/PolymarketIcon";
+import { RUGPULLRUN_URL, SNAKE_GAME_URL } from "@/lib/links";
+import { RugPullRunIcon, SnakeGameIcon } from "@/components/PartnerIcons";
 import {
   ARB_AIRDROP_PCT,
   DEFAULT_AIRDROP_PCT,
@@ -143,21 +143,22 @@ export default function Page() {
           </span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <a
-              href={POLYMARKET_URL}
+              href={SNAKE_GAME_URL}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
             >
-              <PolymarketIcon className="h-3.5 w-auto shrink-0" />
-              Polymarket
+              <SnakeGameIcon className="h-4 w-4" />
+              Play Snake Game
             </a>
             <a
               href={RUGPULLRUN_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-base-text hover:text-base-blue transition-colors font-mono"
             >
-              🎮 RugPullRun
+              <RugPullRunIcon className="h-4 w-4" />
+              RugPullRun
             </a>
             <span>
               Created by{" "}

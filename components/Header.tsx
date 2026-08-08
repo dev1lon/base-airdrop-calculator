@@ -1,6 +1,6 @@
 import { ConnectWallet } from "./ConnectWallet";
-import { POLYMARKET_URL, RUGPULLRUN_URL } from "@/lib/links";
-import { PolymarketIcon } from "./PolymarketIcon";
+import { RUGPULLRUN_URL, SNAKE_GAME_URL } from "@/lib/links";
+import { RugPullRunIcon, SnakeGameIcon } from "./PartnerIcons";
 
 export function Header() {
   return (
@@ -16,21 +16,20 @@ export function Header() {
         />
         <span className="font-semibold tracking-wide text-sm sm:text-base">BASE AIRDROP CALCULATOR</span>
 
-        {/* Mobile: wallet takes its own row, the two partner pills split the
-            next one evenly. Desktop: all three sit inline. */}
+        {/* Mobile: wallet takes its own row, the two game pills split the next
+            one evenly. Desktop: all three sit inline. */}
         <div className="ml-auto w-full sm:w-auto flex flex-wrap items-center gap-2">
           <div className="w-full sm:w-auto flex">
             <ConnectWallet />
           </div>
           <a
-            href={POLYMARKET_URL}
+            href={SNAKE_GAME_URL}
             target="_blank"
-            rel="noopener noreferrer sponsored"
+            rel="noopener noreferrer"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
           >
-            <PolymarketIcon className="h-3.5 w-auto shrink-0" />
-            <span className="hidden sm:inline">Trade</span>
-            <span>Polymarket</span>
+            <SnakeGameIcon className="h-4 w-4" />
+            <span className="whitespace-nowrap">Play Snake Game</span>
           </a>
           <a
             href={RUGPULLRUN_URL}
@@ -38,9 +37,10 @@ export function Header() {
             rel="noopener noreferrer"
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full border border-base-border bg-base-blue/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-base-blue hover:bg-base-blue/10 transition-colors"
           >
-            <span aria-hidden>🎮</span>
-            <span className="hidden sm:inline">Play</span>
-            <span>RugPullRun</span>
+            <RugPullRunIcon className="h-4 w-4" />
+            <span className="whitespace-nowrap">
+              <span className="hidden sm:inline">Play </span>RugPullRun
+            </span>
           </a>
         </div>
       </div>
