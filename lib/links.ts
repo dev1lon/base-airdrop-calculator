@@ -9,7 +9,7 @@ export const SNAKE_GAME_URL = "https://base.app/app/base-snake.app";
 // Support banner: commonsmade vouch campaign.
 export const VOUCH_SIGNUP_URL = "https://commonsmade.com/vouch";
 export const VOUCH_POST_URL =
-  "https://x.com/commonsmade/status/2090831704751825136";
+  "https://x.com/devilonnn/status/2091542332713705880";
 export const VOUCH_TEXT = "@commonsmade I vouch for @devilonnn";
 export const VOUCH_PROMO_CODE = "love";
 
