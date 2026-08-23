@@ -12,3 +12,7 @@ export const VOUCH_POST_URL =
   "https://x.com/commonsmade/status/2090831704751825136";
 export const VOUCH_TEXT = "@commonsmade I vouch for @devilonnn";
 export const VOUCH_PROMO_CODE = "love";
+
+// Campaign deadline — 24 Aug 2026, 20:00 Moscow time (UTC+3). Stored with an
+// explicit offset so the countdown is correct in every visitor's timezone.
+export const VOUCH_DEADLINE_ISO = "2026-08-24T20:00:00+03:00";

@@ -2,22 +2,43 @@
 
 import { useEffect, useState } from "react";
 import {
+  VOUCH_DEADLINE_ISO,
   VOUCH_POST_URL,
   VOUCH_PROMO_CODE,
   VOUCH_SIGNUP_URL,
   VOUCH_TEXT,
 } from "@/lib/links";
 
+const DEADLINE_MS = new Date(VOUCH_DEADLINE_ISO).getTime();
+
+// "1d 4h 12m" / "4h 12m" / "12m 30s" — coarse units first, seconds only in the
+// last hour, so the line stays calm until it actually gets urgent.
+function formatLeft(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m ${sec}s`;
+}
+
 // Support ask shown on every page load — deliberately not persisted in
-// localStorage, so a refresh brings it back. Full-screen sheet on phones,
-// centered dialog on desktop.
+// localStorage, so a refresh brings it back. Bottom sheet on phones, centered
+// dialog on desktop.
 export function SupportBanner() {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  // null until the first client tick, so the server and client markup match.
+  const [msLeft, setMsLeft] = useState<number | null>(null);
 
   // Small delay so the calculator paints first and the sheet reads as an
-  // intentional overlay rather than a blocking splash screen.
+  // intentional overlay rather than a blocking splash screen. Past the
+  // deadline the banner simply never opens — the code stays in place for the
+  // next campaign, it just stops showing.
   useEffect(() => {
+    if (Date.now() >= DEADLINE_MS) return;
     const t = setTimeout(() => setOpen(true), 600);
     return () => clearTimeout(t);
   }, []);
@@ -34,6 +55,20 @@ export function SupportBanner() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
+  }, [open]);
+
+  // Ticks every second: cheap, and the last hour needs second precision.
+  useEffect(() => {
+    if (!open) return;
+    const tick = () => {
+      const left = DEADLINE_MS - Date.now();
+      setMsLeft(left);
+      // Deadline hit while the sheet is open on a long-lived tab: dismiss it.
+      if (left <= 0) setOpen(false);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, [open]);
 
   async function copyText() {
@@ -95,9 +130,17 @@ export function SupportBanner() {
         </button>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-6 sm:px-7">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-base-blueLight px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-base-blue">
-            Free · 1 minute
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-base-blueLight px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-base-blue">
+              Free · 1 minute
+            </span>
+            {msLeft !== null && msLeft > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-base-red/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-base-red">
+                <span className="h-1.5 w-1.5 rounded-full bg-base-red" />
+                Ends in {formatLeft(msLeft)}
+              </span>
+            )}
+          </div>
 
           <h2
             id="support-banner-title"
@@ -109,6 +152,9 @@ export function SupportBanner() {
             The calculator is free and ad-free. If you would like to help it
             keep growing, the two steps below are all it takes — no money, no
             wallet, about a minute of your time.
+          </p>
+          <p className="mt-1.5 text-[13px] font-medium text-base-text">
+            Deadline: 24 August, 20:00 Moscow time (UTC+3).
           </p>
 
           <ol className="mt-5 space-y-4">
