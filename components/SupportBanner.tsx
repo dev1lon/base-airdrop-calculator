@@ -64,7 +64,7 @@ export function SupportBanner() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="support-banner-title"
@@ -94,7 +94,7 @@ export function SupportBanner() {
           </svg>
         </button>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-6 sm:px-7">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-6 sm:px-7">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-base-blueLight px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-base-blue">
             Free · 1 minute
           </span>
@@ -195,18 +195,6 @@ export function SupportBanner() {
           <p className="mt-5 text-[12px] leading-relaxed text-base-muteSoft">
             Thank you — every vouch genuinely helps.
           </p>
-        </div>
-
-        {/* Sticky escape hatch: on a phone the sheet is full height, so the
-            dismiss action has to stay reachable without scrolling. */}
-        <div className="shrink-0 border-t border-base-border bg-white px-5 py-3 sm:px-7">
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="w-full rounded-full px-4 py-2.5 text-sm font-medium text-base-mute transition-colors hover:bg-base-panel hover:text-base-text"
-          >
-            Maybe later
-          </button>
         </div>
       </div>
     </div>

@@ -82,6 +82,6 @@ input[type="range"]::-moz-range-thumb {
    stays visible around its edges on a phone. dvh accounts for mobile browser
    chrome; the vh line is the fallback for older browsers. */
 .banner-sheet {
-  max-height: 85vh;
-  max-height: 85dvh;
+  max-height: 94vh;
+  max-height: 94dvh;
 }
