@@ -153,9 +153,6 @@ export function SupportBanner() {
             keep growing, the two steps below are all it takes — no money, no
             wallet, about a minute of your time.
           </p>
-          <p className="mt-1.5 text-[13px] font-medium text-base-text">
-            Deadline: 24 August, 20:00 Moscow time (UTC+3).
-          </p>
 
           <ol className="mt-5 space-y-4">
             <li className="flex gap-3">
