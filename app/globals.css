@@ -77,3 +77,11 @@ input[type="range"]::-moz-range-thumb {
     animation: none;
   }
 }
+
+/* Support banner sheet: never taller than the visible viewport, so the page
+   stays visible around its edges on a phone. dvh accounts for mobile browser
+   chrome; the vh line is the fallback for older browsers. */
+.banner-sheet {
+  max-height: 85vh;
+  max-height: 85dvh;
+}

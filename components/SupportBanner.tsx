@@ -64,17 +64,17 @@ export function SupportBanner() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="support-banner-title"
     >
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm banner-fade"
+        className="absolute inset-0 bg-black/30 backdrop-blur-[2px] banner-fade"
         onClick={() => setOpen(false)}
       />
 
-      <div className="relative flex w-full flex-col sm:max-h-[85vh] sm:max-w-lg bg-white sm:rounded-2xl sm:border border-base-border shadow-2xl overflow-hidden banner-in">
+      <div className="banner-sheet banner-in relative flex w-full flex-col overflow-hidden rounded-2xl border border-base-border bg-white shadow-2xl sm:max-w-lg">
         {/* Base-blue rail keeps the sheet on-brand without a heavy header */}
         <div className="h-1 shrink-0 bg-base-blue" />
 
@@ -199,7 +199,7 @@ export function SupportBanner() {
 
         {/* Sticky escape hatch: on a phone the sheet is full height, so the
             dismiss action has to stay reachable without scrolling. */}
-        <div className="shrink-0 border-t border-base-border bg-white px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-7">
+        <div className="shrink-0 border-t border-base-border bg-white px-5 py-3 sm:px-7">
           <button
             type="button"
             onClick={() => setOpen(false)}
