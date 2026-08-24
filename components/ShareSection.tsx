@@ -8,7 +8,7 @@ import {
   useConnectModal,
   useSendTransaction,
 } from "thirdweb/react";
-import { upload } from "thirdweb/storage";
+import { uploadCard } from "@/lib/storage";
 import { ShareCard } from "./ShareCard";
 import {
   cardChain,
@@ -151,13 +151,10 @@ export function ShareSection(props: Props) {
       setMintMsg("Preparing image…");
       const blob = await renderBlob();
 
-      // 2. Upload image, then metadata, to IPFS via thirdweb storage.
-      setMintMsg("Uploading to IPFS…");
-      const imageUri = await upload({
-        client: thirdwebClient,
-        files: [new File([blob], "base-airdrop-card.png", { type: "image/png" })],
-      });
-      const metadata = {
+      // 2. Upload image + metadata (IPFS, with a Supabase fallback when the
+      //    IPFS storage quota is exhausted).
+      setMintMsg("Uploading card…");
+      const { metadataUri } = await uploadCard(blob, (imageUri) => ({
         name: "BASE Airdrop Card",
         description:
           "My $BASE airdrop estimate from the BASE Airdrop Calculator.",
@@ -168,15 +165,7 @@ export function ShareSection(props: Props) {
           { trait_type: "Estimated USD", value: Math.round(props.userUsd) },
           { trait_type: "Tokens", value: props.scaledTokens },
         ],
-      };
-      const metadataUri = await upload({
-        client: thirdwebClient,
-        files: [
-          new File([JSON.stringify(metadata)], "metadata.json", {
-            type: "application/json",
-          }),
-        ],
-      });
+      }));
 
       // 3. Mint `qty` copies in one transaction.
       setMintMsg("Confirm in your wallet…");
