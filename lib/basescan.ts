@@ -1,4 +1,7 @@
-const BASE_URL = "https://base.blockscout.com/api";
+// Same-origin proxy (app/api/scan/route.ts): it holds the explorer API key
+// server-side and caches responses, so visitors no longer burn their own IP's
+// anonymous rate limit on base.blockscout.com.
+const BASE_URL = "/api/scan/";
 const PAGE_LIMIT = "1000";
 // tokentx rows carry the parent tx's full `input` calldata (unused here but up
 // to tens of KB each — a busy wallet's 1000-row page can hit 30+ MB and >10 s,
@@ -113,7 +116,11 @@ async function call<T>(
   fallback: T,
   critical = false
 ): Promise<T> {
-  const url = new URL(BASE_URL);
+  // BASE_URL is relative, so it needs an origin to build a URL against; on the
+  // server (build-time prerender) there is no window, hence the placeholder.
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "http://localhost";
+  const url = new URL(BASE_URL, origin);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const target = url.toString();
 
