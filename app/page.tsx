@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Header } from "@/components/Header";
+import { TopNotice } from "@/components/TopNotice";
 import { AddressInput } from "@/components/AddressInput";
 import { EligibilityPanel } from "@/components/EligibilityPanel";
 import { CriteriaList } from "@/components/CriteriaList";
@@ -72,6 +73,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen">
+      <TopNotice />
       <Header />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
