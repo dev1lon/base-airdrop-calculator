@@ -7,8 +7,9 @@ import { NextRequest, NextResponse } from "next/server";
 // generous quota instead of each visitor sharing none.
 
 // Etherscan's multichain V2 endpoint covers Base (chain id 8453) and takes the
-// same module/action parameters as the Blockscout endpoint we used before, so
-// the response shape the client parses is unchanged.
+// same module/action parameters as Blockscout, so the response shape the client
+// parses is unchanged. It is the fallback only — Blockscout is the source the
+// scoring criteria were built and calibrated against.
 const ETHERSCAN_V2 = "https://api.etherscan.io/v2/api";
 const BASE_CHAIN_ID = "8453";
 const BLOCKSCOUT = "https://base.blockscout.com/api";
@@ -81,10 +82,11 @@ export async function GET(req: NextRequest) {
     if (value !== null) blockscoutUrl.searchParams.set(name, value);
   }
 
-  // Etherscan first when we have a key; Blockscout stays as the fallback so a
-  // missing key or an Etherscan outage degrades instead of breaking the site.
+  // Blockscout stays the primary source: its txlist/txlistinternal coverage is
+  // what the bridge criterion depends on, and no free alternative matches it.
+  // Etherscan is only a safety net for when Blockscout rate-limits us.
   const targets = key
-    ? [etherscanUrl.toString(), blockscoutUrl.toString()]
+    ? [blockscoutUrl.toString(), etherscanUrl.toString()]
     : [blockscoutUrl.toString()];
 
   let lastStatus = 502;
@@ -99,14 +101,23 @@ export async function GET(req: NextRequest) {
       const json = await res.json();
       lastBody = json;
 
-      // status "0" with a rate-limit/error string means this upstream refused;
-      // try the next one. An empty-but-valid answer ("No transactions found")
-      // is a real result and must pass through untouched.
-      const result = (json as { status?: string; result?: unknown }).result;
+      // A throttled upstream answers with HTTP 200 and status "0". Blockscout
+      // puts the reason in `message` with a null result ("Too many requests…"),
+      // Etherscan puts it in `result` — check both, or the refusal gets passed
+      // to the client as if it were data. An empty-but-valid answer
+      // ("No transactions found") must still pass through untouched.
+      const body = json as {
+        status?: string;
+        message?: string;
+        result?: unknown;
+      };
+      const reason = [
+        typeof body.result === "string" ? body.result : "",
+        body.message ?? "",
+      ].join(" ");
       const refused =
-        (json as { status?: string }).status !== "1" &&
-        typeof result === "string" &&
-        /rate limit|too many requests|max calls|invalid api key/i.test(result);
+        body.status !== "1" &&
+        /rate limit|too many requests|max calls|invalid api key/i.test(reason);
       if (refused) continue;
 
       return NextResponse.json(json, {
