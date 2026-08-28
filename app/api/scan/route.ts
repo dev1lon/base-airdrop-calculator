@@ -12,7 +12,12 @@ import { NextRequest, NextResponse } from "next/server";
 // scoring criteria were built and calibrated against.
 const ETHERSCAN_V2 = "https://api.etherscan.io/v2/api";
 const BASE_CHAIN_ID = "8453";
+// Public instance: no key, throttled per IP.
 const BLOCKSCOUT = "https://base.blockscout.com/api";
+// Keyed instance: a different host entirely — an apikey on base.blockscout.com
+// is ignored. This is where the free dev.blockscout.com key raises the limit to
+// 5 req/s and 100k credits/day.
+const BLOCKSCOUT_PRO = "https://api.blockscout.com/v2/api";
 
 // Only the calls lib/basescan.ts actually makes. Without an allowlist this
 // route would be an open proxy that anyone could point at any address or
@@ -83,22 +88,33 @@ export async function GET(req: NextRequest) {
   }
   // Anonymous Blockscout requests are throttled hard, and the refusal comes
   // back disguised as a server error ("Something went wrong.", HTTP 500) rather
-  // than a clean 429. A free key from dev.blockscout.com lifts this route to
-  // 5 req/s and 100k credits/day — far more than the whole site needs.
+  // than a clean 429. The free dev.blockscout.com key avoids that, but only on
+  // the keyed host below.
   const blockscoutKey = process.env.BLOCKSCOUT_API_KEY?.trim();
-  if (blockscoutKey) blockscoutUrl.searchParams.set("apikey", blockscoutKey);
 
-  // Blockscout stays the primary source: its txlist/txlistinternal coverage is
-  // what the bridge criterion depends on, and no free alternative matches it.
-  // Etherscan is only a safety net for when Blockscout rate-limits us.
-  const targets = key
-    ? [blockscoutUrl.toString(), etherscanUrl.toString()]
-    : [blockscoutUrl.toString()];
+  const blockscoutProUrl = new URL(BLOCKSCOUT_PRO);
+  blockscoutProUrl.searchParams.set("chain_id", BASE_CHAIN_ID);
+  for (const name of FORWARDED_PARAMS) {
+    const value = params.get(name);
+    if (value !== null) blockscoutProUrl.searchParams.set(name, value);
+  }
+  if (blockscoutKey) blockscoutProUrl.searchParams.set("apikey", blockscoutKey);
+
+  // Blockscout stays the source of truth — the scoring was calibrated on it.
+  // Keyed host first when a key exists, then the public instance, and Etherscan
+  // only as a last resort (its free tier does not even cover Base).
+  const targets: { url: string; name: string }[] = [
+    ...(blockscoutKey
+      ? [{ url: blockscoutProUrl.toString(), name: "blockscout-pro" }]
+      : []),
+    { url: blockscoutUrl.toString(), name: "blockscout-public" },
+    ...(key ? [{ url: etherscanUrl.toString(), name: "etherscan" }] : []),
+  ];
 
   let lastStatus = 502;
   let lastBody: unknown = null;
 
-  for (const target of targets) {
+  for (const { url: target, name: upstream } of targets) {
     try {
       const res = await fetchUpstream(target);
       lastStatus = res.status;
@@ -132,6 +148,9 @@ export async function GET(req: NextRequest) {
           // CDN keeps repeat lookups off the upstream quota entirely.
           "Cache-Control":
             "public, s-maxage=300, stale-while-revalidate=1800",
+          // Which upstream actually answered — makes it possible to tell from
+          // outside whether the key is in play, without exposing the key.
+          "x-scan-upstream": upstream,
         },
       });
     } catch {
