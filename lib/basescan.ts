@@ -1,7 +1,11 @@
-// Same-origin proxy (app/api/scan/route.ts): it holds the explorer API key
-// server-side and caches responses, so visitors no longer burn their own IP's
-// anonymous rate limit on base.blockscout.com.
-const BASE_URL = "/api/scan/";
+// Blockscout is called straight from the visitor's browser on purpose: its
+// rate limit is per IP, so every person gets their own quota. Routing everyone
+// through our server instead put the whole site behind one shared Vercel egress
+// IP, which Blockscout throttles almost immediately (HTTP 429).
+const DIRECT_URL = "https://base.blockscout.com/api";
+// Same-origin proxy (app/api/scan/route.ts) — only for when this visitor's own
+// IP is throttled. It can also reach Etherscan with a server-side key.
+const PROXY_URL = "/api/scan/";
 const PAGE_LIMIT = "1000";
 // tokentx rows carry the parent tx's full `input` calldata (unused here but up
 // to tens of KB each — a busy wallet's 1000-row page can hit 30+ MB and >10 s,
@@ -10,7 +14,9 @@ const PAGE_LIMIT = "1000";
 // need a recent sample for stablecoin value and ERC-20 bridge detection.
 const TOKEN_PAGE_LIMIT = "200";
 const REQUEST_TIMEOUT_MS = 15_000;
-const MAX_ATTEMPTS = 4;
+// Per route. Two routes are tried (direct, then proxy), so this stays low to
+// keep the worst-case wait bounded.
+const MAX_ATTEMPTS = 3;
 
 type ApiResponse<T> = { status: string; message: string; result: T };
 
@@ -116,30 +122,38 @@ async function call<T>(
   fallback: T,
   critical = false
 ): Promise<T> {
-  // BASE_URL is relative, so it needs an origin to build a URL against; on the
+  // PROXY_URL is relative, so it needs an origin to build a URL against; on the
   // server (build-time prerender) there is no window, hence the placeholder.
   const origin =
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
-  const url = new URL(BASE_URL, origin);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const target = url.toString();
+
+  const targets = [DIRECT_URL, PROXY_URL].map((base) => {
+    const url = new URL(base, origin);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+    return url.toString();
+  });
 
   let lastErr: unknown;
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    try {
-      return await attempt<T>(target, fallback);
-    } catch (e) {
-      lastErr = e;
-      // 429 = IP rate-limited; the window won't reset within a retry backoff,
-      // and retrying only burns more of the exhausted quota. Fail fast.
-      if (e instanceof ApiUnavailableError && e.status === 429) break;
-      if (i < MAX_ATTEMPTS - 1) await sleep(300 * (i + 1) + Math.floor(Math.random() * 200));
+  for (const target of targets) {
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      try {
+        return await attempt<T>(target, fallback);
+      } catch (e) {
+        lastErr = e;
+        // 429 = this route is rate-limited; the window won't reset within a
+        // retry backoff, and retrying only burns more of the exhausted quota.
+        // Move on to the next route instead.
+        if (e instanceof ApiUnavailableError && e.status === 429) break;
+        if (i < MAX_ATTEMPTS - 1) {
+          await sleep(300 * (i + 1) + Math.floor(Math.random() * 200));
+        }
+      }
     }
   }
   if (critical) {
     const action = params.action || "unknown";
     const reason = lastErr instanceof Error ? lastErr.message : String(lastErr);
-    throw new ApiUnavailableError(`Blockscout ${action} failed after ${MAX_ATTEMPTS} attempts: ${reason}`);
+    throw new ApiUnavailableError(`Explorer ${action} failed on all routes: ${reason}`);
   }
   return fallback;
 }
