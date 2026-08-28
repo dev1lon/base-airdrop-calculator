@@ -55,9 +55,9 @@ const TOTAL_BUDGET_MS = 8_500;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function fetchUpstream(url: string): Promise<Response> {
+async function fetchUpstream(url: string, timeoutMs: number): Promise<Response> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), UPSTREAM_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     return await fetch(url, { cache: "no-store", signal: ctrl.signal });
   } finally {
@@ -130,20 +130,23 @@ export async function GET(req: NextRequest) {
   const tried: string[] = [];
 
   const startedAt = Date.now();
-  const outOfTime = () => Date.now() - startedAt > TOTAL_BUDGET_MS;
+  // Time left in the budget. Each attempt gets at most this, so a slow upstream
+  // can never push the whole route past the browser's own 10s cutoff.
+  const remaining = () => TOTAL_BUDGET_MS - (Date.now() - startedAt);
+  let budgetSpent = false;
 
   for (const { url: target, name: upstream } of targets) {
-    if (outOfTime()) {
-      tried.push("budget-exhausted");
-      break;
-    }
+    if (budgetSpent) break;
     for (let attempt = 0; attempt < UPSTREAM_ATTEMPTS; attempt++) {
-      if (attempt > 0) {
-        if (outOfTime()) break;
-        await sleep(RETRY_DELAY_MS * attempt);
+      if (attempt > 0) await sleep(RETRY_DELAY_MS * attempt);
+      const attemptMs = Math.min(UPSTREAM_TIMEOUT_MS, remaining());
+      if (attemptMs < 1_000) {
+        tried.push("budget-exhausted");
+        budgetSpent = true;
+        break;
       }
       try {
-      const res = await fetchUpstream(target);
+      const res = await fetchUpstream(target, attemptMs);
       lastStatus = res.status;
       if (!res.ok) {
         tried.push(`${upstream}:${res.status}`);
