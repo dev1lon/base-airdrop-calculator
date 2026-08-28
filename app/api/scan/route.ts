@@ -113,12 +113,18 @@ export async function GET(req: NextRequest) {
 
   let lastStatus = 502;
   let lastBody: unknown = null;
+  // One line per upstream attempt, surfaced as a response header so a failure
+  // can be diagnosed from outside without leaking the key.
+  const tried: string[] = [];
 
   for (const { url: target, name: upstream } of targets) {
     try {
       const res = await fetchUpstream(target);
       lastStatus = res.status;
-      if (!res.ok) continue;
+      if (!res.ok) {
+        tried.push(`${upstream}:${res.status}`);
+        continue;
+      }
 
       const json = await res.json();
       lastBody = json;
@@ -140,7 +146,10 @@ export async function GET(req: NextRequest) {
       const refused =
         body.status !== "1" &&
         /rate limit|too many requests|max calls|invalid api key/i.test(reason);
-      if (refused) continue;
+      if (refused) {
+        tried.push(`${upstream}:refused`);
+        continue;
+      }
 
       return NextResponse.json(json, {
         headers: {
@@ -156,6 +165,7 @@ export async function GET(req: NextRequest) {
     } catch {
       // Timeout or network error — fall through to the next upstream.
       lastStatus = 504;
+      tried.push(`${upstream}:timeout`);
     }
   }
 
@@ -165,6 +175,9 @@ export async function GET(req: NextRequest) {
       message: "Explorer unavailable",
       result: null,
     },
-    { status: lastStatus >= 400 ? lastStatus : 502 }
+    {
+      status: lastStatus >= 400 ? lastStatus : 502,
+      headers: { "x-scan-tried": tried.join(",") || "none" },
+    }
   );
 }
