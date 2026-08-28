@@ -81,6 +81,12 @@ export async function GET(req: NextRequest) {
     const value = params.get(name);
     if (value !== null) blockscoutUrl.searchParams.set(name, value);
   }
+  // Anonymous Blockscout requests are throttled hard, and the refusal comes
+  // back disguised as a server error ("Something went wrong.", HTTP 500) rather
+  // than a clean 429. A free key from dev.blockscout.com lifts this route to
+  // 5 req/s and 100k credits/day — far more than the whole site needs.
+  const blockscoutKey = process.env.BLOCKSCOUT_API_KEY?.trim();
+  if (blockscoutKey) blockscoutUrl.searchParams.set("apikey", blockscoutKey);
 
   // Blockscout stays the primary source: its txlist/txlistinternal coverage is
   // what the bridge criterion depends on, and no free alternative matches it.
