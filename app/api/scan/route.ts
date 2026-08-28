@@ -41,7 +41,7 @@ const FORWARDED_PARAMS = [
   "tag",
 ];
 
-const UPSTREAM_TIMEOUT_MS = 6_000;
+const UPSTREAM_TIMEOUT_MS = 5_000;
 // Blockscout answers roughly one request in three right now — the rest come
 // back as HTTP 500 with no pattern. Retrying the same upstream a couple of
 // times turns that into a usable success rate and keeps traffic off the paid
@@ -51,7 +51,7 @@ const RETRY_DELAY_MS = 400;
 // Hard ceiling for the whole route. The browser gives up on this request after
 // 10s and moves to its own fallback, so answering later than this is worse than
 // answering "unavailable" now: it just delays the working path.
-const TOTAL_BUDGET_MS = 8_500;
+const TOTAL_BUDGET_MS = 7_000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
