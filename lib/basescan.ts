@@ -124,6 +124,42 @@ async function attempt<T>(url: string, fallback: T): Promise<T> {
 // dead requests before the Ankr fallback runs. One failure is enough to learn.
 const brokenActions = new Set<string>();
 
+// Remembered across reloads too: without this every refresh pays the full round
+// of failed Blockscout attempts again before reaching the fallback. Short TTL,
+// so an endpoint that gets fixed is picked back up on its own.
+const BROKEN_TTL_MS = 10 * 60 * 1000;
+const BROKEN_KEY = "bac_broken_actions";
+
+function loadBrokenActions() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = sessionStorage.getItem(BROKEN_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw) as Record<string, number>;
+    const now = Date.now();
+    for (const [action, at] of Object.entries(saved)) {
+      if (now - at < BROKEN_TTL_MS) brokenActions.add(action);
+    }
+  } catch {
+    // Private mode, disabled storage, corrupt JSON — just start clean.
+  }
+}
+
+function rememberBrokenAction(action: string) {
+  brokenActions.add(action);
+  if (typeof window === "undefined") return;
+  try {
+    const raw = sessionStorage.getItem(BROKEN_KEY);
+    const saved = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+    saved[action] = Date.now();
+    sessionStorage.setItem(BROKEN_KEY, JSON.stringify(saved));
+  } catch {
+    // Non-fatal: the in-memory set still covers this page session.
+  }
+}
+
+loadBrokenActions();
+
 // Retries transient failures with backoff. When all attempts fail:
 //   - critical call  -> throw (the whole check fails loudly -> "try again")
 //   - non-critical    -> return fallback (degrade gracefully)
@@ -167,7 +203,7 @@ async function call<T>(
   }
   // Every route refused this action — remember it so the next check skips
   // straight to the fallback source instead of repeating the wait.
-  brokenActions.add(action);
+  rememberBrokenAction(action);
 
   if (critical) {
     const reason = lastErr instanceof Error ? lastErr.message : String(lastErr);
