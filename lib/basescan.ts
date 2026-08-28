@@ -118,6 +118,12 @@ async function attempt<T>(url: string, fallback: T): Promise<T> {
   }
 }
 
+// Actions Blockscout has already failed on in this page session. Its tokentx
+// endpoint can be down globally (HTTP 500 on every address, both hosts) while
+// txlist keeps working, and re-trying it on every check costs the visitor two
+// dead requests before the Ankr fallback runs. One failure is enough to learn.
+const brokenActions = new Set<string>();
+
 // Retries transient failures with backoff. When all attempts fail:
 //   - critical call  -> throw (the whole check fails loudly -> "try again")
 //   - non-critical    -> return fallback (degrade gracefully)
@@ -130,6 +136,11 @@ async function call<T>(
   // server (build-time prerender) there is no window, hence the placeholder.
   const origin =
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
+
+  const action = params.action || "unknown";
+  if (brokenActions.has(action)) {
+    throw new ApiUnavailableError(`Blockscout ${action} known-broken this session`);
+  }
 
   const targets = [DIRECT_URL, PROXY_URL].map((base) => {
     const url = new URL(base, origin);
@@ -154,8 +165,11 @@ async function call<T>(
       }
     }
   }
+  // Every route refused this action — remember it so the next check skips
+  // straight to the fallback source instead of repeating the wait.
+  brokenActions.add(action);
+
   if (critical) {
-    const action = params.action || "unknown";
     const reason = lastErr instanceof Error ? lastErr.message : String(lastErr);
     throw new ApiUnavailableError(`Explorer ${action} failed on all routes: ${reason}`);
   }
