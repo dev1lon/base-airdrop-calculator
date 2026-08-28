@@ -42,6 +42,14 @@ const FORWARDED_PARAMS = [
 ];
 
 const UPSTREAM_TIMEOUT_MS = 20_000;
+// Blockscout answers roughly one request in three right now — the rest come
+// back as HTTP 500 with no pattern. Retrying the same upstream a couple of
+// times turns that into a usable success rate and keeps traffic off the paid
+// fallback. Only 5xx and timeouts are retried; a 429 means the window is spent.
+const UPSTREAM_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 400;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function fetchUpstream(url: string): Promise<Response> {
   const ctrl = new AbortController();
@@ -118,12 +126,17 @@ export async function GET(req: NextRequest) {
   const tried: string[] = [];
 
   for (const { url: target, name: upstream } of targets) {
-    try {
+    for (let attempt = 0; attempt < UPSTREAM_ATTEMPTS; attempt++) {
+      if (attempt > 0) await sleep(RETRY_DELAY_MS * attempt);
+      try {
       const res = await fetchUpstream(target);
       lastStatus = res.status;
       if (!res.ok) {
         tried.push(`${upstream}:${res.status}`);
-        continue;
+        // 5xx is the flaky-Blockscout case and worth another shot; 4xx (429,
+        // 402, 400) will answer the same way until the window or plan changes.
+        if (res.status >= 500 && attempt < UPSTREAM_ATTEMPTS - 1) continue;
+        break;
       }
 
       const json = await res.json();
@@ -148,7 +161,7 @@ export async function GET(req: NextRequest) {
         /rate limit|too many requests|max calls|invalid api key/i.test(reason);
       if (refused) {
         tried.push(`${upstream}:refused`);
-        continue;
+        break;
       }
 
       return NextResponse.json(json, {
@@ -160,12 +173,14 @@ export async function GET(req: NextRequest) {
           // Which upstream actually answered — makes it possible to tell from
           // outside whether the key is in play, without exposing the key.
           "x-scan-upstream": upstream,
+          "x-scan-tried": [...tried, `${upstream}:ok`].join(","),
         },
       });
-    } catch {
-      // Timeout or network error — fall through to the next upstream.
-      lastStatus = 504;
-      tried.push(`${upstream}:timeout`);
+      } catch {
+        // Timeout or network error — retry, then move to the next upstream.
+        lastStatus = 504;
+        tried.push(`${upstream}:timeout`);
+      }
     }
   }
 
