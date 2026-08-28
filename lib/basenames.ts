@@ -1,4 +1,5 @@
 import { createPublicClient, http, fallback, namehash, keccak256, toHex, encodePacked } from "viem";
+import { ANKR_BASE_RPC } from "./ankr";
 import { base } from "viem/chains";
 
 const REGISTRY = "0xb94704422c2a1e396835a571837aa5ae53285a95" as const;
@@ -31,15 +32,23 @@ const RESOLVER_ABI = [
   },
 ] as const;
 
+// Note: without a NEXT_PUBLIC_ prefix this never reaches the browser bundle, so
+// it only ever applied to server-side rendering. Kept for that case.
 const envRpc = process.env.ALCHEMY_RPC?.trim();
 
+// Ordered by reliability, every entry verified with a live eth_getBalance call:
+// the paid Ankr endpoint first, then free public nodes as backup. Dropped
+// https://rpc.ankr.com/base (now answers "Unauthorized: You must authenticate")
+// and https://base.llamarpc.com (HTTP 521) — both were dead weight in the chain.
 const RPC_URLS = [
   ...(envRpc ? [envRpc] : []),
+  ANKR_BASE_RPC,
   "https://base-rpc.publicnode.com",
   "https://base.drpc.org",
-  "https://rpc.ankr.com/base",
-  "https://base.llamarpc.com",
   "https://mainnet.base.org",
+  "https://base.gateway.tenderly.co",
+  "https://base.meowrpc.com",
+  "https://1rpc.io/base",
 ];
 
 const client = createPublicClient({

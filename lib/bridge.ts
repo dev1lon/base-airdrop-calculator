@@ -8,8 +8,9 @@
 // the L2StandardBridge. Public-RPC `eth_getLogs` caps the block range (~10k),
 // but Ankr's `ankr_getLogs` scans the full history in a single paginated call.
 
-const ANKR_KEY = "aa28857240e2e0c174f41020168f4574e42437b8f1157d709ea18dd430b6ade1";
-const ANKR_URL = `https://rpc.ankr.com/multichain/${ANKR_KEY}`;
+import { ANKR_MULTICHAIN_URL } from "./ankr";
+
+const ANKR_URL = ANKR_MULTICHAIN_URL;
 const L2_STANDARD_BRIDGE = "0x4200000000000000000000000000000000000010";
 // keccak256("ETHBridgeFinalized(address,address,uint256,bytes)")
 const ETH_BRIDGE_FINALIZED =

@@ -1,3 +1,6 @@
+import { baseClient } from "./basenames";
+import { getNormalTxsAnkr, getTokenTxsAnkr } from "./ankrscan";
+
 // Blockscout is called straight from the visitor's browser on purpose: its
 // rate limit is per IP, so every person gets their own quota. Routing everyone
 // through our server instead put the whole site behind one shared Vercel egress
@@ -13,10 +16,11 @@ const PAGE_LIMIT = "1000";
 // payload light and fast; tx/contract counts come from txlist, so tokens only
 // need a recent sample for stablecoin value and ERC-20 bridge detection.
 const TOKEN_PAGE_LIMIT = "200";
-const REQUEST_TIMEOUT_MS = 15_000;
-// Per route. Two routes are tried (direct, then proxy), so this stays low to
-// keep the worst-case wait bounded.
-const MAX_ATTEMPTS = 3;
+const REQUEST_TIMEOUT_MS = 10_000;
+// Per route, and two routes are tried (direct, then proxy) before the Ankr
+// fallback takes over. Kept at 2 so a Blockscout outage costs ~4 quick failures
+// instead of a minute of retries before the user sees a result.
+const MAX_ATTEMPTS = 2;
 
 type ApiResponse<T> = { status: string; message: string; result: T };
 
@@ -160,7 +164,17 @@ async function call<T>(
 
 export async function getNormalTxs(address: string): Promise<NormalTx[]> {
   // Critical: txCount / months / value all derive from this. A failed request
-  // must not be mistaken for an empty wallet, so propagate the error.
+  // must not be mistaken for an empty wallet, so propagate the error — but try
+  // Ankr first-hand before giving up, since Blockscout outages are frequent.
+  try {
+    return await callNormalTxs(address);
+  } catch (e) {
+    console.warn("[basescan] txlist via Blockscout failed, trying Ankr:", e);
+    return getNormalTxsAnkr(address);
+  }
+}
+
+function callNormalTxs(address: string): Promise<NormalTx[]> {
   return call<NormalTx[]>(
     {
       module: "account",
@@ -201,6 +215,15 @@ export async function getInternalTxs(
 export async function getTokenTxs(address: string): Promise<TokenTx[]> {
   // Critical for token bridge/value criteria. A rate-limit string must not
   // become "no token activity".
+  try {
+    return await callTokenTxs(address);
+  } catch (e) {
+    console.warn("[basescan] tokentx via Blockscout failed, trying Ankr:", e);
+    return getTokenTxsAnkr(address);
+  }
+}
+
+function callTokenTxs(address: string): Promise<TokenTx[]> {
   return call<TokenTx[]>(
     {
       module: "account",
@@ -218,6 +241,18 @@ export async function getTokenTxs(address: string): Promise<TokenTx[]> {
 }
 
 export async function getEthBalance(address: string): Promise<number> {
+  // The balance is a plain `eth_getBalance`, so the RPC transport answers it
+  // without spending any explorer quota — and it keeps working when Blockscout
+  // is down. Verified to match Blockscout to the wei.
+  try {
+    const wei = await baseClient.getBalance({
+      address: address as `0x${string}`,
+    });
+    return Number(wei) / 1e18;
+  } catch (e) {
+    console.warn("[basescan] RPC balance failed, falling back to explorer:", e);
+  }
+
   const wei = await call<string>(
     { module: "account", action: "balance", address, tag: "latest" },
     "0",
