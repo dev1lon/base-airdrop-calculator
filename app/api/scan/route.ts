@@ -41,13 +41,17 @@ const FORWARDED_PARAMS = [
   "tag",
 ];
 
-const UPSTREAM_TIMEOUT_MS = 20_000;
+const UPSTREAM_TIMEOUT_MS = 6_000;
 // Blockscout answers roughly one request in three right now — the rest come
 // back as HTTP 500 with no pattern. Retrying the same upstream a couple of
 // times turns that into a usable success rate and keeps traffic off the paid
 // fallback. Only 5xx and timeouts are retried; a 429 means the window is spent.
 const UPSTREAM_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 400;
+// Hard ceiling for the whole route. The browser gives up on this request after
+// 10s and moves to its own fallback, so answering later than this is worse than
+// answering "unavailable" now: it just delays the working path.
+const TOTAL_BUDGET_MS = 8_500;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -125,9 +129,19 @@ export async function GET(req: NextRequest) {
   // can be diagnosed from outside without leaking the key.
   const tried: string[] = [];
 
+  const startedAt = Date.now();
+  const outOfTime = () => Date.now() - startedAt > TOTAL_BUDGET_MS;
+
   for (const { url: target, name: upstream } of targets) {
+    if (outOfTime()) {
+      tried.push("budget-exhausted");
+      break;
+    }
     for (let attempt = 0; attempt < UPSTREAM_ATTEMPTS; attempt++) {
-      if (attempt > 0) await sleep(RETRY_DELAY_MS * attempt);
+      if (attempt > 0) {
+        if (outOfTime()) break;
+        await sleep(RETRY_DELAY_MS * attempt);
+      }
       try {
       const res = await fetchUpstream(target);
       lastStatus = res.status;
