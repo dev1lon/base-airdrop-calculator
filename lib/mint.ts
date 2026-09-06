@@ -5,7 +5,7 @@ import { createWallet } from "thirdweb/wallets";
 // Public thirdweb client (clientId is safe to expose; it's domain-restricted in
 // the thirdweb dashboard). Used for wallet connection and IPFS uploads.
 export const thirdwebClient = createThirdwebClient({
-  clientId: "a7c48ae791be4878a3739b4fe46185c0",
+  clientId: "328e2ce5ee7791384222fbe949aee066",
 });
 
 export const cardChain = base;
